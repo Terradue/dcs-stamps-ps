@@ -56,11 +56,24 @@ get_data() {
 }
 
 get_orbit_flag() {
-
+  local orbit_flag
+  orbit_flag="$( ciop-getparam orbit )"
+  [ ${orbit_flag} != "VOR" ] && [ ${orbit_flag} != "ODR" ] && return 1
+  echo ${orbit_flag}
+  return 0
 }
 
 get_aux() {
+  local sensing_date=$1
+  local orbit_flag=$2
   
+  [ ${orbit_flag} == "VOR" ] && {
+    local aux_cat="http://catalogue.terradue.int/catalogue/search/rdf"
+    start="$( date -d "${sensing_date} 3 days ago" +%Y-%m-%dT00:00:00 )"
+    stop="$( date -d "${sensing_date} 3 days" +%Y-%m-%dT00:00:00 )"
+  
+    
+  }
 }
 
 main() {
@@ -72,19 +85,21 @@ main() {
   
   # which orbits
   orbits="$( get_orbit_flag )"
-
+  [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+  
   master_ref="$( ciop-getparam master )"
   
   ciop-log "INFO" "Retrieving master"
   master=$( get_data ${master_ref} ${TMPDIR} )
-  [ $? -ne 0 ] && return ${ERR_MASTER}
+  [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
   sensing_date=$( get_sensing_date $master )
-  [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DAY}
+  [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
   
-  mission=$( get_mission $master | tr "A-Z" "a-z" )
+  mission=$( get_mission ${master} | tr "A-Z" "a-z" )
   [ $? -ne 0 ] && return ${ERR_MISSION_MASTER}
   [ ${mission} == "asar" ] && flag="envi"
+  
   # TODO manage ERS and ALOS
   # [ ${mission} == "alos" ] && flag="alos"
   # [ ${mission} == "ers" ] && flag="ers"
@@ -107,13 +122,13 @@ main() {
   cd ${TMPDIR}/SLC
   tar cfz txt.tgz ar.txt looks.txt
    
-  txt_ref="$( echo txt.tgz | ciop-publish -s )" 
+  txt_ref="$( ciop-publish echo txt.tgz )" 
   
   tar cfz ${sensing_date}.tgz ${sensing_date}
-  master_slc_ref="$( echo ${sensing_date}.tgz | ciop-publish -s )"
+  master_slc_ref="$( ciop-publish ${sensing_date}.tgz )"
   
   while read slave_ref; do
-    echo "${master_slc_ref};${txt_ref};${slave_ref}"
+    echo "${master_slc_ref};${txt_ref};${slave_ref}" | ciop-publish -s
   
   done
 }
