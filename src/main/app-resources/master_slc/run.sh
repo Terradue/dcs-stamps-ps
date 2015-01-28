@@ -71,9 +71,18 @@ get_aux() {
     local aux_cat="http://catalogue.terradue.int/catalogue/search/rdf"
     start="$( date -d "${sensing_date} 3 days ago" +%Y-%m-%dT00:00:00 )"
     stop="$( date -d "${sensing_date} 3 days" +%Y-%m-%dT00:00:00 )"
-  
     
-  }
+    mkdir -p ${TMPDIR}/VOR
+  
+    opensearch-client -p "time:start=${start}" \
+      -p "time:end=${stop}" \
+      "${aux_cat}" enclosure |
+      while read url; do
+        echo ${url} | ciop-copy -O ${TMPDIR}/VOR
+      done
+  } 
+  
+  
 }
 
 main() {
