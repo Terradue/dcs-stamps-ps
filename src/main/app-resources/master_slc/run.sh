@@ -45,7 +45,7 @@ function cleanExit() {
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
     "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
 
-  [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+  [ -n "${TinMPDIR}" ] && rm -rf ${TMPDIR}
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 
@@ -89,7 +89,7 @@ main() {
   cd ${master_folder}
   slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
   ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
-  
+  ln -s ${master}   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
   
@@ -98,12 +98,12 @@ main() {
   tar cvfz txt.tgz ar.txt looks.txt
   [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
    
-  txt_ref="$( ciop-publish txt.tgz )" 
+  txt_ref="$( ciop-publish ${TMPDIR}/SLC/txt.tgz )" 
   [ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
   
   tar cvfz ${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
-  master_slc_ref="$( ciop-publish ${sensing_date}.tgz )"
+  master_slc_ref="$( ciop-publish ${TMPDIR}/SLC/${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read slave_ref; do

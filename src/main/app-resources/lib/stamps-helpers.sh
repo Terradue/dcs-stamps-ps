@@ -6,7 +6,8 @@ set_env() {
   export TMPDIR=/tmp/$( uuidgen )
   export SLC=${TMPDIR}/SLC
   export VOR_DIR=${TMPDIR}/VOR
-
+  export INS_DIR=${TMPDIR}/INS
+  mkdir -p ${INS_DIR}
   mkdir -p ${TMPDIR}/SLC
   return $?
 }
@@ -52,11 +53,24 @@ get_aux() {
   
     opensearch-client -p "time:start=${start}" \
       -p "time:end=${stop}" \
-      "${aux_cat}" enclosure |
-      while read url; do
-        echo ${url} | ciop-copy -O ${TMPDIR}/VOR -
-      done
-  } 
+      "${aux_cat}" enclosure > ${TMPDIR}/aux.list
+  
+    cat ${TMPDIR}/aux.list | while read url; do
+    echo ${url} | ciop-copy -O ${TMPDIR}/VOR -
+  done
+
+  }
+    
+  aux_cat="http://catalogue.terradue.int/catalogue/search/ASA_INS_AX"
+    
+  opensearch-client -p "time:start=${start}" \
+    -p "time:end=${stop}" \
+    "${aux_cat}" enclosure > ${TMPDIR}/aux.list
+
+  cat ${TMPDIR}/aux.list | while read url; do
+    echo ${url} | ciop-copy -O ${TMPDIR}/INS -
+  done
+   
   
   [ ${orbit_flag} == "ODR" ] && {
     # TODO add ASAR_ODR.tgz, ERS1, ERS2 to /application/aux
