@@ -1,6 +1,6 @@
 #!/bin/bash
 mode=$1
-
+set -x
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
 
@@ -23,7 +23,7 @@ ERR_SLC_TAR=21
 ERR_SLC_PUBLISH=23
 
 # add a trap to exit gracefully
-cleanExit() {
+function cleanExit() {
   local retval=$?
   local msg
 
@@ -87,7 +87,7 @@ main() {
   [ $? -ne 0 ] && return ${ERR_AUX}
   
   cd ${master_folder}
-  slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor")"
+  slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
   ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
   
   ${slc_bin}

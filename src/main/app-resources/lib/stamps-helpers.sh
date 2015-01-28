@@ -5,6 +5,8 @@ set_env() {
   # shorter temp path
   export TMPDIR=/tmp/$( uuidgen )
   export SLC=${TMPDIR}/SLC
+  export VOR_DIR=${TMPDIR}/VOR
+
   mkdir -p ${TMPDIR}/SLC
   return $?
 }
@@ -17,7 +19,7 @@ get_data() {
   local res
 
   enclosure="$( opensearch-client "${ref}" enclosure )"
-  res=?
+  res=$?
   # opensearh client doesn't deal with local paths
   [ ${res} -eq 0 ] && [ -z "${enclosure}" ] && return ${ERR_GETDATA}
   [ ${res} -ne 0 ] && enclosure=${ref}
@@ -42,7 +44,7 @@ get_aux() {
   local orbit_flag=$3
   
   [ ${orbit_flag} == "VOR" ] && {
-    local aux_cat="http://catalogue.terradue.int/catalogue/search/rdf"
+    local aux_cat="http://catalogue.terradue.int/catalogue/search/DOR_VOR_AX"
     start="$( date -d "${sensing_date} 3 days ago" +%Y-%m-%dT00:00:00 )"
     stop="$( date -d "${sensing_date} 3 days" +%Y-%m-%dT00:00:00 )"
     
@@ -52,7 +54,7 @@ get_aux() {
       -p "time:end=${stop}" \
       "${aux_cat}" enclosure |
       while read url; do
-        echo ${url} | ciop-copy -O ${TMPDIR}/VOR
+        echo ${url} | ciop-copy -O ${TMPDIR}/VOR -
       done
   } 
   
@@ -61,6 +63,6 @@ get_aux() {
     tar -C ${TMPDIR} ${_CIOP_APPLICATION_PATH}/aux/${mission}_ODR.tgz
     
   }
-  
+  return 0 
   
 }
