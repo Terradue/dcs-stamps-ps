@@ -8,6 +8,16 @@ source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
 
 # define the exit codes
 SUCCESS=0
+ERR_ORBIT_FLAG=5
+ERR_MASTER_EMPTY=7
+ERR_MASTER_SENSING_DATE=9
+ERR_MISSION_MASTER=11 
+ERR_AUX=13
+ERR_SLC=15 
+ERR_SLC_AUX_TAR=17
+ERR_SLC_AUX_PUBLISH=19
+ERR_SLC_TAR=21
+ERR_SLC_PUBLISH=23
 
 # add a trap to exit gracefully
 cleanExit () {
@@ -17,6 +27,16 @@ cleanExit () {
   msg=""
   case "${retval}" in
     ${SUCCESS}) msg="Processing successfully concluded";;
+    ${ERR_ORBIT_FLAG}) msg="Failed to determine which orbit files to use";;
+    ${ERR_MASTER_EMPTY}) msg="Couldn't retrieve master";;
+    ${ERR_MASTER_SENSING_DATE}) msg="Couldn't retrieve master sensing date";;
+    ${ERR_MISSION_MASTER}) msg="Couldn't determine master mission";;
+    ${ERR_AUX}) msg="Couldn't retrieve auxiliary files";;
+    ${ERR_SLC}) msg="Failed to process slc";;
+    ${ERR_SLC_AUX_TAR}) msg="Failed to create archive with master ROI_PAC aux files";;
+    ${ERR_SLC_AUX_PUBLISH}) msg="Failed to publish archive with master ROI_PAC aux files";;
+    ${ERR_SLC_TAR}) msg="Failed to create archive with master slc";;
+    ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with master slc";;
   esac
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
@@ -73,11 +93,15 @@ main() {
   # package 
   cd ${TMPDIR}/SLC
   tar cvfz txt.tgz ar.txt looks.txt
+  [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
    
   txt_ref="$( ciop-publish txt.tgz )" 
+  [ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
   
   tar cvfz ${sensing_date}.tgz ${sensing_date}
+  [ $? -ne 0 ] && return ${ERR_SLC_TAR}
   master_slc_ref="$( ciop-publish ${sensing_date}.tgz )"
+  [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read slave_ref; do
     echo "${master_slc_ref} ${txt_ref} ${slave_ref}" | ciop-publish -s
