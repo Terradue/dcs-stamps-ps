@@ -75,7 +75,7 @@ main() {
   # TODO manage ERS and ALOS
   # [ ${mission} == "alos" ] && flag="alos"
   # [ ${mission} == "ers" ] && flag="ers"
-  $ [ ${mission} == "ers_envi" ] && flag="ers_envi"
+  # [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
   master_folder=${TMPDIR}/SLC/${sensing_date}
   mkdir -p ${master_folder}
