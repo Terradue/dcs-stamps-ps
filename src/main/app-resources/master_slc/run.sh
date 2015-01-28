@@ -6,6 +6,9 @@ mode=$1
 
 source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
 
+# source StaMPS
+source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
+
 # define the exit codes
 SUCCESS=0
 ERR_ORBIT_FLAG=5
@@ -20,7 +23,7 @@ ERR_SLC_TAR=21
 ERR_SLC_PUBLISH=23
 
 # add a trap to exit gracefully
-cleanExit () {
+cleanExit() {
   local retval=$?
   local msg
 
@@ -65,7 +68,7 @@ main() {
   master=$( get_data ${master_ref} ${TMPDIR} )
   [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
-  sensing_date=$( get_sensing_date $master )
+  sensing_date=$( get_sensing_date ${master} )
   [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
   
   mission=$( get_mission ${master} | tr "A-Z" "a-z" )
@@ -85,7 +88,7 @@ main() {
   
   cd ${master_folder}
   slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor")"
-  ciop-log "INFO" "Run $slc_bin for ${sensing_date}"
+  ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
@@ -112,4 +115,4 @@ cat | main
 res=$?
 [ ${res} -ne 0 ] && exit ${res}
   
-[ "$mode" != "test" ] && exit 0
+[ "${mode}" != "test" ] && exit 0

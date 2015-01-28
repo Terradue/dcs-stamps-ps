@@ -1,10 +1,16 @@
 #!/bin/bash
+
 mode=$1
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
 
-# define the exit codes
+# source the stamps-helpers
+source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
+
+# source StaMPS
+source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
+
 # define the exit codes
 SUCCESS=0
 ERR_ORBIT_FLAG=5
@@ -19,7 +25,7 @@ ERR_SLC_TAR=19
 ERR_SLC_PUBLISH=21
 
 # add a trap to exit gracefully
-cleanExit () {
+cleanExit() {
   local retval=$?
   local msg
   msg=""
@@ -42,6 +48,7 @@ cleanExit () {
   [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
+
 trap cleanExit EXIT
 
 main() {

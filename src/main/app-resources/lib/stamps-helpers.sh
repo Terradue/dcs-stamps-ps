@@ -56,7 +56,7 @@ get_aux() {
       done
   } 
   
-  [ ${orbit_flag} == "ODR" ] &&
+  [ ${orbit_flag} == "ODR" ] && {
     # TODO add ASAR_ODR.tgz, ERS1, ERS2 to /application/aux
     tar -C ${TMPDIR} ${_CIOP_APPLICATION_PATH}/aux/${mission}_ODR.tgz
     
