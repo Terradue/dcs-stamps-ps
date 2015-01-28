@@ -64,8 +64,9 @@ get_orbit_flag() {
 }
 
 get_aux() {
-  local sensing_date=$1
-  local orbit_flag=$2
+  local mission=$1
+  local sensing_date=$2
+  local orbit_flag=$3
   
   [ ${orbit_flag} == "VOR" ] && {
     local aux_cat="http://catalogue.terradue.int/catalogue/search/rdf"
@@ -81,6 +82,12 @@ get_aux() {
         echo ${url} | ciop-copy -O ${TMPDIR}/VOR
       done
   } 
+  
+  [ ${orbit_flag} == "ODR" ] &&
+    # TODO add ASAR_ODR.tgz, ERS1, ERS2 to /application/aux
+    tar -C ${TMPDIR} ${_CIOP_APPLICATION_PATH}/aux/${mission}_ODR.tgz
+    
+  }
   
   
 }
@@ -117,7 +124,7 @@ main() {
   master_folder=${TMPDIR}/SLC/${sensing_date}
   mkdir -p ${master_folder}
   
-  get_aux ${sensing_date} ${orbits}
+  get_aux ${mission} ${sensing_date} ${orbits} 
   [ $? -ne 0 ] && return ${ERR_AUX}
   
   cd ${master_folder}
@@ -129,16 +136,15 @@ main() {
   
   # package 
   cd ${TMPDIR}/SLC
-  tar cfz txt.tgz ar.txt looks.txt
+  tar cvfz txt.tgz ar.txt looks.txt
    
-  txt_ref="$( ciop-publish echo txt.tgz )" 
+  txt_ref="$( ciop-publish txt.tgz )" 
   
-  tar cfz ${sensing_date}.tgz ${sensing_date}
+  tar cvfz ${sensing_date}.tgz ${sensing_date}
   master_slc_ref="$( ciop-publish ${sensing_date}.tgz )"
   
   while read slave_ref; do
-    echo "${master_slc_ref};${txt_ref};${slave_ref}" | ciop-publish -s
-  
+    echo "${master_slc_ref} ${txt_ref} ${slave_ref}" | ciop-publish -s
   done
 }
 
