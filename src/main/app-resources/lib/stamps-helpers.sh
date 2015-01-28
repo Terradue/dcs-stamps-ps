@@ -4,7 +4,7 @@ set_env() {
 
   # shorter temp path
   export TMPDIR=/tmp/$( uuidgen )
-  mkdir -p ${TMPDIR}
+  mkdir -p ${TMPDIR}/SLC
   return $?
 }
 
