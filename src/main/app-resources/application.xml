@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="stamps-ps">
+  <jobTemplates>
+    <jobTemplate id="master_slc">
+      <streamingExecutable>/application/master_slc/run.sh</streamingExecutable>
+      <defaultParameters>
+        <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+        <parameter id="master" title="master product reference" abstract="Define the master product reference to use with ADORE" scope="runtime">/tmp/doris/ASA_IMS_1PNPDE20090412_092427_000000162078_00079_37207_1530.N1</parameter>
+        -->
+        <!-- end of Envisat ASAR L'Aquila -->
+        <parameter id="poi" title="Point of interest" abstract="Point of interest WKT, e.g. POINT(longitude latitude)" scope="runtime">POINT(13.4 42.35)</parameter>
+        <parameter id="extent" title="Extent" abstract="extent" scope="runtime">2000,2000</parameter>
+        <parameter id="settings" title="Settings for ADORE Doris separated by comma" abstract="Settings for ADORE Doris separated by comma" scope="runtime">cc_winsize="128 128",fc_acc="8 8",int_multilook="4 4",coh_multilook="4 4",dumpbaseline="15 10"</parameter>
+        <parameter id="master" title="master product reference" abstract="Define the master product reference to use with ADORE" scope="runtime">/tmp/doris/ASA_IMS_1PNDPA20090311_204746_000000162077_00129_36756_3125.N1</parameter>
+      </defaultParameters>
+      <defaultJobconf>
+      	<!-- <property id="ciop.job.max.tasks">1</property> -->
+        <property id="mapred.task.timeout">9900000000</property>
+      </defaultJobconf>
+    </jobTemplate>
+  </jobTemplates>
+  <workflow id="dcs-doris-ifg" title="Interferogram generation with ADORE DORIS" abstract="Interferogram generation with ADORE DORIS">
+    <workflowVersion>1.0</workflowVersion>
+    <node id="node_adore">
+      <job id="adore" />
+      <sources>
+        <!--<source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave TerraSAR-X product reference to use with ADORE" refid="string:list">s3://terrasar-x/2014/02/TSX_20140201T164858.314_Etna_C221_O055_A_R_SM006_SSC.tar.gz</source>-->
+        <!--<source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="string:list">http://eo-virtual-archive4.esa.int/search/ASA_IMS_1P/ASA_IMS_1PXPDE20031116_175727_000000142021_00385_08956_0009.N1/rdf</source>-->
+        <!-- <source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="string:list">/tmp/doris/ASA_IMS_1PNUPA20090201_092428_000000162076_00079_36205_2699.N1</source> -->
+        <source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="string:list">/tmp/doris/ASA_IMS_1PNDPA20070411_204750_000000162057_00129_26736_3123.N1,/tmp/doris/ASA_IMS_1PNDPA20080326_204749_000000162067_00129_31746_3124.N1</source>
+      </sources>
+      <parameters/>
+    </node>
+  </workflow>
+</application>
