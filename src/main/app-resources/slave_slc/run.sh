@@ -37,49 +37,52 @@ main() {
   orbits="$( get_orbit_flag )"
   [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
   
-  master_ref="$( ciop-getparam master )"
+  first=TRUE
   
-  ciop-log "INFO" "Retrieving master"
-  master=$( get_data ${master_ref} ${TMPDIR} )
-  [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
+  while read master_slc_ref txt_ref slave_ref; do
   
-  sensing_date=$( get_sensing_date $master )
-  [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
+    [ ${first} == "TRUE"] && {
+      ciop-copy -O ${SLC} ${master_slc_ref}
+      # TODO check copy
+      ciop-copy -O ${SLC} ${txt_ref}
+      # TODO check copy 
+      first=FALSE
+    }
   
-  mission=$( get_mission ${master} | tr "A-Z" "a-z" )
-  [ $? -ne 0 ] && return ${ERR_MISSION_MASTER}
+  slave=$( ciop-copy -O $TMPDIR )
+  
+  sensing_date=$( get_sensing_date $slave )
+  [ $? -ne 0 ] && return ${ERR_SLAVE_SENSING_DATE}
+  
+  mission=$( get_mission ${slave} | tr "A-Z" "a-z" )
+  [ $? -ne 0 ] && return ${ERR_MISSION_SLAVE}
   [ ${mission} == "asar" ] && flag="envi"
   
   # TODO manage ERS and ALOS
   # [ ${mission} == "alos" ] && flag="alos"
   # [ ${mission} == "ers" ] && flag="ers"
-  $ [ ${mission} == "ers_envi" ] && flag="ers_envi"
+  # [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
-  master_folder=${TMPDIR}/SLC/${sensing_date}
-  mkdir -p ${master_folder}
+  slave_folder=${SLC}/${sensing_date}
+  mkdir -p ${slave_folder}
   
   get_aux ${mission} ${sensing_date} ${orbits} 
   [ $? -ne 0 ] && return ${ERR_AUX}
-  
-  cd ${master_folder}
+
+  cd ${_folder}
+  ln -s ${slave}
   slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor")"
   ciop-log "INFO" "Run $slc_bin for ${sensing_date}"
   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
   
-  # package 
-  cd ${TMPDIR}/SLC
-  tar cvfz txt.tgz ar.txt looks.txt
-   
-  txt_ref="$( ciop-publish txt.tgz )" 
-  
+  cd ${SLC}
   tar cvfz ${sensing_date}.tgz ${sensing_date}
-  master_slc_ref="$( ciop-publish ${sensing_date}.tgz )"
   
-  while read slave_ref; do
-    echo "${master_slc_ref} ${txt_ref} ${slave_ref}" | ciop-publish -s
-  done
+  ciop-publish ${sensing_date}.tgz
+  
+  rm -fr ${SLC}/${sensing_date}
 }
 
 cat | main 
