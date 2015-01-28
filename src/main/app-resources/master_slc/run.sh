@@ -59,6 +59,10 @@ get_orbit_flag() {
 
 }
 
+get_aux() {
+  
+}
+
 main() {
   local res
 
@@ -86,16 +90,36 @@ main() {
   # [ ${mission} == "ers" ] && flag="ers"
   $ [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
-  master_folder=${TMPDIR}/${sensing_date}
+  master_folder=${TMPDIR}/SLC/${sensing_date}
   mkdir -p ${master_folder}
   
-  get_aux ${sensing_date}
+  get_aux ${sensing_date} ${orbits}
   [ $? -ne 0 ] && return ${ERR_AUX}
   
   cd ${master_folder}
-  slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor)"
+  slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor")"
   ciop-log "INFO" "Run $slc_bin for ${sensing_date}"
   
-  cd $TMPDIR
+  ${slc_bin}
+  [ $? -ne 0 ] && return ${ERR_SLC}
   
+  # package 
+  cd ${TMPDIR}/SLC
+  tar cfz txt.tgz ar.txt looks.txt
+   
+  txt_ref="$( echo txt.tgz | ciop-publish -s )" 
+  
+  tar cfz ${sensing_date}.tgz ${sensing_date}
+  master_slc_ref="$( echo ${sensing_date}.tgz | ciop-publish -s )"
+  
+  while read slave_ref; do
+    echo "${master_slc_ref};${txt_ref};${slave_ref}"
+  
+  done
 }
+
+cat | main 
+res=$?
+[ ${res} -ne 0 ] && exit ${res}
+  
+[ "$mode" != "test" ] && exit 0
