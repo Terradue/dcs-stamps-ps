@@ -98,16 +98,16 @@ main() {
   tar cvfz txt.tgz ar.txt looks.txt
   [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
    
-  txt_ref="$( ciop-publish ${TMPDIR}/SLC/txt.tgz )" 
+  txt_ref="$( ciop-publish -a ${TMPDIR}/SLC/txt.tgz )" 
   [ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
   
   tar cvfz ${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
-  master_slc_ref="$( ciop-publish ${TMPDIR}/SLC/${sensing_date}.tgz )"
+  master_slc_ref="$( ciop-publish -a ${TMPDIR}/SLC/${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read slave_ref; do
-    echo "${master_slc_ref} ${txt_ref} ${slave_ref}" | ciop-publish -s
+    echo "${master_slc_ref},${txt_ref},${slave_ref}" | ciop-publish -s
   done
 }
 
