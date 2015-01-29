@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 mode=$1
 
 # source the ciop functions (e.g. ciop-log)
@@ -64,22 +64,22 @@ main() {
   
   first=TRUE
   
-  IFS=","
-  while read master_slc_ref txt_ref slave_ref; do
+  #IFS=","
+  while read input; do
+    IFS=',' read -r master_slc_ref txt_ref slave_ref <<< "$input"
   
     ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$slave_ref"
-    [ ${first} == "TRUE"] && {
-      ciop-copy -O ${SLC} ${master_slc_ref}
-      [ $? -ne 0 ] && return ${ERR_MASTER_SLC}
+    [ ${first} == "TRUE" ] && {
       ciop-copy -O ${SLC} ${txt_ref}
       [ $? -ne 0 ] && return ${ERR_MASTER_SLC}
       first=FALSE
     }
   
-    slave=$( ciop-copy -O $TMPDIR )
+    slave=$( ciop-copy -O ${TMPDIR} $( echo ${slave_ref} | tr -d "\t")  )
     [ $? -ne 0 ] && return ${ERR_SLAVE}
-  
-    sensing_date=$( get_sensing_date $slave )
+ 
+    ciop-log "DEBUG" "I'm done with ciop copy" 
+    sensing_date=$( get_sensing_date ${slave} )
     [ $? -ne 0 ] && return ${ERR_SLAVE_SENSING_DATE}
   
     mission=$( get_mission ${slave} | tr "A-Z" "a-z" )

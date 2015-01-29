@@ -17,6 +17,7 @@ ERR_MASTER_SENSING_DATE=9
 ERR_MISSION_MASTER=11 
 ERR_AUX=13
 ERR_SLC=15 
+ERR_MASTER_SETUP=16
 ERR_SLC_AUX_TAR=17
 ERR_SLC_AUX_PUBLISH=19
 ERR_SLC_TAR=21
@@ -92,7 +93,12 @@ main() {
   ln -s ${master}   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
-  
+
+  # check with expert
+  cp ${STAMPS}/ROI_PAC_SCR/master_crop.in ${master_folder}/master_crop.in 
+  step_master_setup
+  [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
+
   # package 
   cd ${TMPDIR}/SLC
   tar cvfz txt.tgz ar.txt looks.txt
@@ -100,10 +106,13 @@ main() {
    
   txt_ref="$( ciop-publish -a ${TMPDIR}/SLC/txt.tgz )" 
   [ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
-  
-  tar cvfz ${sensing_date}.tgz ${sensing_date}
+  rm -f txt.tgz 
+ 
+  cd ${TMPDIR}
+  tar cvfz master_${sensing_date}.tgz SLC INSAR_${sensing_date} 
+#${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
-  master_slc_ref="$( ciop-publish -a ${TMPDIR}/SLC/${sensing_date}.tgz )"
+  master_slc_ref="$( ciop-publish -a ${TMPDIR}/master_${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read slave_ref; do

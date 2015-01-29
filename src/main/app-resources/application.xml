@@ -13,7 +13,7 @@
       </defaultJobconf>
     </jobTemplate>
     <jobTemplate id="slave_slc">
-      <streamingExecutable>/application/master_slc/run.sh</streamingExecutable>
+      <streamingExecutable>/application/slave_slc/run.sh</streamingExecutable>
       <defaultParameters>
         <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
       </defaultParameters>
