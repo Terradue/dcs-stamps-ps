@@ -5,7 +5,7 @@
       <streamingExecutable>/application/master_slc/run.sh</streamingExecutable>
       <defaultParameters>
         <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
-        <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">https://eo-virtual-archive4.esa.int/supersites/ASA_IM__0CNPAM20110719_090401_000000163104_00352_49073_1934.N1</parameter>
+        <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPAM20110719_090401_000000163104_00352_49073_1934.N1/rdf</parameter>
       </defaultParameters>
       <defaultJobconf>
       	<property id="ciop.job.max.tasks">1</property>

@@ -52,6 +52,34 @@ function cleanExit() {
 
 trap cleanExit EXIT
 
+dem() {
+  local target=$1
+
+  local xmin=$2
+  local ymin=$3
+  local xmax=$4
+  local ymax=$5
+
+  wdir=${PWD}/.wdir
+  mkdir ${wdir}
+  mkdir -p ${target}
+
+  target=$( cd ${target} && pwd )
+
+  cd ${wdir}
+  construct_dem.sh dem $xmin $xmax $ymin $ymax SRTM3
+
+  mkdir -p ${target}
+
+  cp -v ${wdir}/dem/final_dem.dem ${target}
+  cp -v ${wdir}/dem/input.doris_dem ${target}
+
+  sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
+  cd - &> /dev/null
+
+  rm -fr ${wdir}
+}
+
 main() {
   local res
 
@@ -109,7 +137,7 @@ main() {
   rm -f txt.tgz 
  
   cd ${TMPDIR}
-  tar cvfz master_${sensing_date}.tgz SLC INSAR_${sensing_date} 
+  tar cvfz master_${sensing_date}.tgz DEM SLC INSAR_${sensing_date} 
 #${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
   master_slc_ref="$( ciop-publish -a ${TMPDIR}/master_${sensing_date}.tgz )"

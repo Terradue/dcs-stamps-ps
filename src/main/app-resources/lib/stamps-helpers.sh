@@ -9,7 +9,8 @@ set_env() {
   export INS_DIR=${TMPDIR}/INS
   mkdir -p ${INS_DIR}
   mkdir -p ${TMPDIR}/SLC
-  return $?
+  mkdir -p ${TMPDIR}/DEM
+  return 0
 }
 
 get_data() {
