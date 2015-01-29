@@ -64,8 +64,10 @@ main() {
   
   first=TRUE
   
+  IFS=","
   while read master_slc_ref txt_ref slave_ref; do
   
+    ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$slave_ref"
     [ ${first} == "TRUE"] && {
       ciop-copy -O ${SLC} ${master_slc_ref}
       [ $? -ne 0 ] && return ${ERR_MASTER_SLC}
@@ -107,11 +109,11 @@ main() {
     tar cvfz ${sensing_date}.tgz ${sensing_date}
     [ $? -ne 0 ] && return ${ERR_SLC_TAR}
   
-    slave_slc_ref=$( ciop-publish ${sensing_date}.tgz )
+    slave_slc_ref=$( ciop-publish -a ${SLC}/${sensing_date}.tgz )
     [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
     # publish the references for the next job
-    echo "${master_slc_ref} ${txt_ref} ${slave_slc_ref}" | ciop-publish -s
+    echo "${master_slc_ref},${txt_ref},${slave_slc_ref}" | ciop-publish -s
     rm -fr ${SLC}/${sensing_date}
 
   done
