@@ -135,9 +135,28 @@ main() {
   [ $? -ne 0 ] && return ${ERR_DEM}
  
   # TODO check with expert what are ALL the processing steps for the master
+  ciop-log "INFO" "Will run step_master_setup"
   cp ${STAMPS}/ROI_PAC_SCR/master_crop.in ${master_folder}/master_crop.in 
   step_master_setup
   [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
+
+  # moving to INSAR_master date
+  cd ${TMPDIR}/INSAR_${sensing_date}
+  [ "${orbits}" == "ODR" ] && {
+    ciop-log "INFO" "Will run step_master_orbit_ODR"
+ 
+    step_master_orbit_ODR
+    [ $? -ne 0 ] && return ${ERR_MASTER_ORBIT_ODR}
+  } 
+   
+  ciop-log "INFO" "Will run step_master_timing"
+  # update timimg.dorisin with the values from the DEM
+  head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${sensing_date}/timing.dorisin
+  cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${sensing_date}/timing.dorisin  
+  tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${sensing_date}/timing.dorisin
+
+  step_master_timing
+  [ $? -ne 0 ] && return ${ERR_MASTER_TIMING}  
 
   # package 
   cd ${TMPDIR}/SLC
