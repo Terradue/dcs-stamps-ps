@@ -1,6 +1,10 @@
 #!/bin/bash
 mode=$1
 set -x
+
+export PATH=${_CIOP_APPLICATION_PATH}/master_slc/bin:$PATH
+
+
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
 
@@ -22,6 +26,7 @@ ERR_SLC_AUX_TAR=17
 ERR_SLC_AUX_PUBLISH=19
 ERR_SLC_TAR=21
 ERR_SLC_PUBLISH=23
+ERR_DEM=25
 
 # add a trap to exit gracefully
 function cleanExit() {
@@ -41,6 +46,7 @@ function cleanExit() {
     ${ERR_SLC_AUX_PUBLISH}) msg="Failed to publish archive with master ROI_PAC aux files";;
     ${ERR_SLC_TAR}) msg="Failed to create archive with master slc";;
     ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with master slc";;
+    ${ERR_DEM}) msg="Failed to generate DEM";;
   esac
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
@@ -53,12 +59,14 @@ function cleanExit() {
 trap cleanExit EXIT
 
 dem() {
-  local target=$1
+  local dataset_ref=$1
+  local target=$2
+  local bbox
+  local wkt
+ 
+  wkt="$( ciop-casmeta -f "dct:spatial" "${dataset_ref}" )"
 
-  local xmin=$2
-  local ymin=$3
-  local xmax=$4
-  local ymax=$5
+  [ -n "${wkt}" ] && bbox="$( mbr.py "${wkt}" )" || return 1
 
   wdir=${PWD}/.wdir
   mkdir ${wdir}
@@ -67,9 +75,8 @@ dem() {
   target=$( cd ${target} && pwd )
 
   cd ${wdir}
-  construct_dem.sh dem $xmin $xmax $ymin $ymax SRTM3
-
-  mkdir -p ${target}
+  construct_dem.sh dem ${bbox} SRTM3 || return 1
+  
 
   cp -v ${wdir}/dem/final_dem.dem ${target}
   cp -v ${wdir}/dem/input.doris_dem ${target}
@@ -78,6 +85,7 @@ dem() {
   cd - &> /dev/null
 
   rm -fr ${wdir}
+  return 0
 }
 
 main() {
@@ -122,7 +130,11 @@ main() {
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
 
-  # check with expert
+  ciop-log "INFO" "Create DEM"
+  dem ${master_ref} ${TMPDIR}/DEM
+  [ $? -ne 0 ] && return ${ERR_DEM}
+ 
+  # TODO check with expert what are ALL the processing steps for the master
   cp ${STAMPS}/ROI_PAC_SCR/master_crop.in ${master_folder}/master_crop.in 
   step_master_setup
   [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 

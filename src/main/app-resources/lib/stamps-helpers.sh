@@ -20,7 +20,8 @@ get_data() {
   local enclosure
   local res
 
-  enclosure="$( opensearch-client "${ref}" enclosure )"
+  # TODO remove later the head -n 1 for opensearch client
+  enclosure="$( opensearch-client "${ref}" enclosure | head -n 1)"
   res=$?
   # opensearh client doesn't deal with local paths
   [ ${res} -eq 0 ] && [ -z "${enclosure}" ] && return ${ERR_GETDATA}
