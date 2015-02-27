@@ -1,42 +1,34 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="stamps-ps">
   <jobTemplates>
-    <jobTemplate id="master_slc">
-      <streamingExecutable>/application/master_slc/run.sh</streamingExecutable>
-      <defaultParameters>
-        <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
-        <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPAM20110719_090401_000000163104_00352_49073_1934.N1/rdf</parameter>
-      </defaultParameters>
-      <defaultJobconf>
-      	<property id="ciop.job.max.tasks">1</property>
-        <property id="mapred.task.timeout">9900000000</property>
-      </defaultJobconf>
+    <jobTemplate id="preprocess">
+      <streamingExecutable>/application/preprocess/run_preprocess.sh</streamingExecutable>
+ 	<defaultParameters>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	</defaultParameters>
+        <defaultJobconf>
+          <property id="mapred.task.timeout">9900000000</property>
+        </defaultJobconf>
     </jobTemplate>
-    <jobTemplate id="slave_slc">
-      <streamingExecutable>/application/slave_slc/run.sh</streamingExecutable>
-      <defaultParameters>
-        <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
-      </defaultParameters>
-      <defaultJobconf>
+    <jobTemplate id="master_prep">
+      <streamingExecutable>/application/master_prep/run_master_prep.sh</streamingExecutable>
+        <defaultJobconf>
         <property id="mapred.task.timeout">9900000000</property>
-      </defaultJobconf>
+        </defaultJobconf>
     </jobTemplate>
   </jobTemplates>
   <workflow id="dcs-stamps-ps" title="StaMPS" abstract="StaMPS">
     <workflowVersion>1.0</workflowVersion>
-    <node id="node_master_slc">
-      <job id="master_slc" />
-      <sources>
-         <source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="string:list">https://eo-virtual-archive4.esa.int/supersites/ASA_IM__0CNPAM20110520_090308_000000163102_00352_48211_1866.N1,https://eo-virtual-archive4.esa.int/supersites/ASA_IM__0CNPAM20110219_090132_000000163099_00352_46918_1711.N1</source>
-      </sources>
-      <parameters/>
-    </node>
-    <node id="node_slave_slc">
-      <job id="slave_slc" />
-      <sources>
-         <source refid="wf:node">node_master_slc</source>
-      </sources>
-      <parameters/>
-    </node>
-  </workflow>
+      <node id="node_preprocess">
+        <job id="preprocess" />
+          <sources>
+          <source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="file:urls">/application/inputs/input.list</source>
+          </sources>
+          <parameters/>
+      </node>
+      <node id="node_master_prep">
+        <job id="master_prep" />
+          <parameters/>
+      </node>
+   </workflow>
 </application>
