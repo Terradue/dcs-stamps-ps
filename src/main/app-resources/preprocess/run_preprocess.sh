@@ -1,6 +1,5 @@
 #! /bin/bash
 mode=$1
-#set -x
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
@@ -124,8 +123,4 @@ done
 
 }
 cat | main
-#res=$?
-#[ ${res} -ne 0 ] && exit ${res}
-#[ "${mode}" != "test" ] && exit 0
 exit ${SUCCESS}
-
