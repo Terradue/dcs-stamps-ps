@@ -72,6 +72,8 @@ export PROCESS=${TMPDIR}/PROCESS
 mkdir -p $RAW 
 mkdir -p $PROCESS
 
+first=TRUE
+
 # download data into $RAW
 while read line; do 
    	
