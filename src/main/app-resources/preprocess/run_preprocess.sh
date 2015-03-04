@@ -14,7 +14,7 @@ source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 set_env
 
 #--------------------------------
-#	2) Error Handling	
+#       2) Error Handling       
 #--------------------------------
 
 # define the exit codes
@@ -48,13 +48,13 @@ ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with slc";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+#[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
 
 #--------------------------------
-#	3) Main Function	
+#       3) Main Function        
 #--------------------------------
 main() {
 local res
@@ -69,68 +69,86 @@ RAW=${TMPDIR}/RAW
 export PROCESS=${TMPDIR}/PROCESS
 
 # create folders
-mkdir -p $RAW 
+mkdir -p $RAW
 mkdir -p $PROCESS
 
 first=TRUE
 
 # download data into $RAW
-while read line; do 
-   	
-	IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$line"
-  
-	ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$scene_ref"
-    	[ ${first} == "TRUE" ] && {
-      	ciop-copy -O ${SLC} ${txt_ref}
-      	[ $? -ne 0 ] && return ${ERR_MASTER_SLC}
-      	first=FALSE
-    	}
-  
-    	scene=$( ciop-copy -O ${TMPDIR} $( echo ${scene_ref} | tr -d "\t")  )
-    	[ $? -ne 0 ] && return ${ERR_SCENE}	
+while read line; do
 
-	ciop-log "INFO" "Scene: $scene"
+        IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$line"
 
-	# which orbits (defined in application.xml)
-	orbits="$( get_orbit_flag )"
-	[ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+        ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$scene_ref"
+        [ ${first} == "TRUE" ] && {
+        ciop-copy -O ${SLC} ${txt_ref}
+        [ $? -ne 0 ] && return ${ERR_MASTER_SLC}
+        first=FALSE
+        }
 
-	ciop-log "INFO" "Get sensing date"
-	sensing_date=$( get_sensing_date ${scene} )
-	[ $? -ne 0 ] && return ${ERR_SENSING_DATE}
+        scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
+        [ $? -ne 0 ] && return ${ERR_SCENE}
 
-	ciop-log "INFO" "Get mission"
-	mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
-	[ $? -ne 0 ] && return ${ERR_MISSION}
-	[ ${mission} == "asar" ] && flag="envi"
+        ciop-log "INFO" "Scene: $scene"
 
-	get_aux ${mission} ${sensing_date} ${orbits}
-	[ $? -ne 0 ] && return ${ERR_AUX}
+        # which orbits (defined in application.xml)
+        orbits="$( get_orbit_flag )"
+        [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+
+        ciop-log "INFO" "Get sensing date"
+        sensing_date=$( get_sensing_date ${scene} )
+        [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
+
+        ciop-log "INFO" "Get mission"
+        mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
+        [ $? -ne 0 ] && return ${ERR_MISSION}
+        [ ${mission} == "asar" ] && flag="envi"
+
+        get_aux ${mission} ${sensing_date} ${orbits}
+        [ $? -ne 0 ] && return ${ERR_AUX}
+
+        # link_raw
+        ciop-log "INFO" "Set-up Stamps Structure (i.e. link_raw)"
+        link_raw $RAW $PROCESS
+        [ $? -ne 0 ] && return ${ERR_LINK_RAW}
+
+        # focalize SLC
+        scene_folder=${TMPDIR}/PROCESS/SLC/${sensing_date}
+        cd ${scene_folder}
+        slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+        ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
+        ${slc_bin}
+        [ $? -ne 0 ] && return ${ERR_SLC}
+
+	master_ref="$( ciop-getparam master )"
+	master_date=$( get_sensing_date ${master_ref} )
+	[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
+
+	cd ${TMPDIR}/INSAR_$master_date
+	mkdir $sensing_date
+	cd $sensing_date
 	
-	# link_raw
-	ciop-log "INFO" "Set-up Stamps Structure (i.e. link_raw)"
-	link_raw $RAW $PROCESS
-	[ $? -ne 0 ] && return ${ERR_LINK_RAW}
-	
-	# focalize SLC
-	scene_folder=${TMPDIR}/PROCESS/SLC/${sensing_date}
-	cd ${scene_folder}	
-	slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
-	ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
-	${slc_bin}
-	[ $? -ne 0 ] && return ${ERR_SLC}
+	# step_orbit (extract orbits)
+	ln -s ${TMPDIR}/PROCESS/SLC/${sensing_date} SLC
+	#cp -f SLC/slave.res .
+	#cp -f ${TMPDIR}/INSAR_$master_date/master.res .
+	step_orbit
 
-	# publish for next node
-	cd ${TMPDIR}/PROCESS/SLC
-	ciop-log "INFO" "create tar"
-	tar cvfz ${sensing_date}.tgz ${sensing_date}
-	[ $? -ne 0 ] && return ${ERR_SLC_TAR}
+	# step_coarse (image coarse correlation)	
+	#cp $DORIS_SCR/coarse.dorisin
+	#step_coarse
 
-	ciop-log "INFO" "Publishing"
- 	ciop-publish ${TMPDIR}/PROCESS/SLC/${sensing_date}.tgz
-	[ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
+        # publish for next node
+        cd ${TMPDIR}/PROCESS/SLC
+        ciop-log "INFO" "create tar"
+        tar cvfz ${sensing_date}.tgz ${sensing_date}
+        [ $? -ne 0 ] && return ${ERR_SLC_TAR}
 
-done 
+        ciop-log "INFO" "Publishing"
+        ciop-publish ${TMPDIR}/PROCESS/SLC/${sensing_date}.tgz
+        [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
+
+done
 
 #master_ref="$( ciop-getparam master )"
 
@@ -147,3 +165,4 @@ done
 }
 cat | main
 exit ${SUCCESS}
+

@@ -16,6 +16,7 @@
       <streamingExecutable>/application/preprocess/run_preprocess.sh</streamingExecutable>
  	<defaultParameters>
 	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	  <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">file:///tmp/data/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1</parameter>
 	</defaultParameters>
         <defaultJobconf>
           <property id="mapred.task.timeout">9900000000</property>
