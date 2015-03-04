@@ -13,9 +13,6 @@ source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
 # source StaMPS
 source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 
-# source sar helpers and functions
-set_env
-
 # define the exit codes
 SUCCESS=0
 ERR_ORBIT_FLAG=5
@@ -76,8 +73,8 @@ main() {
   
   ciop-log "INFO" "Retrieving master"
 #  master=$( get_data ${master_ref} ${TMPDIR} )
-   master=`echo ${master_ref} | ciop-copy -o ${TMPDIR}`
-  [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
+   master=`echo ${master_ref} | ciop-copy -o ${TMPDIR} -f -`
+   [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
   ciop-log "INFO" "Get sensing date"
   sensing_date=$( get_sensing_date ${master} )
