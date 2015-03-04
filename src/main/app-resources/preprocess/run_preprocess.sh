@@ -74,15 +74,22 @@ mkdir -p $PROCESS
 
 # download data into $RAW
 while read line; do 
-	
+   	
+	IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$input"
+  
+	ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$scene_ref"
+    	[ ${first} == "TRUE" ] && {
+      	ciop-copy -O ${SLC} ${txt_ref}
+      	[ $? -ne 0 ] && return ${ERR_MASTER_SLC}
+      	first=FALSE
+    	}
+  
+    	scene=$( ciop-copy -O ${TMPDIR} $( echo ${scene_ref} | tr -d "\t")  )
+    	[ $? -ne 0 ] && return ${ERR_SCENE}	
+
 	# which orbits (defined in application.xml)
 	orbits="$( get_orbit_flag )"
 	[ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
-
-	ciop-log "INFO" "Retrieving scene"
-	#scene=$( get_data ${line} ${RAW} )
-	scene="$( ciop-copy -f -U -O ${RAW} ${line} 2> /dev/null )"
-	[ $? -ne 0 ] && return ${ERR_SCENE_EMPTY}
 
 	ciop-log "INFO" "Get sensing date"
 	sensing_date=$( get_sensing_date ${scene} )
@@ -121,10 +128,17 @@ while read line; do
 
 done 
 
-master_ref="$( ciop-getparam master )"
-scene="$( ciop-copy -f -U -O ${RAW} ${line} 2> /dev/null )"
+#master_ref="$( ciop-getparam master )"
 
+#sensing_date=$( get_sensing_date ${master_ref} )
+#[ $? -ne 0 ] && return ${ERR_SENSING_DATE}
 
+#cd ${TMPDIR}/INSAR_$master_ref
+#mkdir $sensing_date
+#cd $sensing_date
+#step_orbit
+#step_coarse
+#cd ../
 
 }
 cat | main
