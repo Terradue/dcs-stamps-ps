@@ -89,6 +89,8 @@ while read line; do
     	scene=$( ciop-copy -O ${TMPDIR} $( echo ${scene_ref} | tr -d "\t")  )
     	[ $? -ne 0 ] && return ${ERR_SCENE}	
 
+	ciop-log "INFO" "Scene: $scene"
+
 	# which orbits (defined in application.xml)
 	orbits="$( get_orbit_flag )"
 	[ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
