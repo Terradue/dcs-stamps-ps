@@ -60,16 +60,17 @@ main() {
 local res
 
 # Input
+while read line; do 
+	ciop-copy -o ${PROCESS} ${line}
+done
 
-
-# Folder where raw data should be stored
-RAW=${TMPDIR}/RAW
-
-# PROCESS folder
-export PROCESS=${TMPDIR}/PROCESS
+ls -1 ${PROCESS} *tgz > list_tgz
+while read line;do
+	tar -xvf ${PROCESS}/
+done < list_tgz
 
 cd $PROCESS/SLC	
-PRE_MASTER=`ls -1 | awk 'NR == 1'`
+PRE_MASTER=`ls -1 | awk 'NR == 1'` #VALID???
 
 # get pixel & lines for the image
 # might be done for every image creating a YYYYMMDD.proc in every SLC/YYYYMMDD folder
@@ -100,15 +101,17 @@ cd $PROCESS/INSAR_$PRE_MASTER
 make_orbits
 [ $? -ne 0 ] && return ${ERR_MAKE_ORBITS}
 
-while read line; do
+make_coarse 
+
+#while read line; do
 	
-	cd $line
-	# code snippet taken from step_coarse original
-	cp $DORIS_SCR/coarse.dorisin . 
-	doris coarse.dorisin > step_coarse.log
-	[ $? -ne 0 ] && return ${ERR_MAKE_COARSE}
-	cd ../
-done
+#	cd $line
+#	# code snippet taken from step_coarse original
+#	cp $DORIS_SCR/coarse.dorisin . 
+#	doris coarse.dorisin > step_coarse.log
+#	[ $? -ne 0 ] && return ${ERR_MAKE_COARSE}
+#	cd ../
+#done
 
 #
 master_select > master.txt

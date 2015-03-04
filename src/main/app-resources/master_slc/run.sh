@@ -26,7 +26,7 @@ ERR_SLC_AUX_TAR=17
 ERR_SLC_AUX_PUBLISH=19
 ERR_SLC_TAR=21
 ERR_SLC_PUBLISH=23
-ERR_DEM=25
+
 
 # add a trap to exit gracefully
 function cleanExit() {
@@ -46,7 +46,6 @@ function cleanExit() {
     ${ERR_SLC_AUX_PUBLISH}) msg="Failed to publish archive with master ROI_PAC aux files";;
     ${ERR_SLC_TAR}) msg="Failed to create archive with master slc";;
     ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with master slc";;
-    ${ERR_DEM}) msg="Failed to generate DEM";;
   esac
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
@@ -58,35 +57,6 @@ function cleanExit() {
 
 trap cleanExit EXIT
 
-dem() {
-  local dataset_ref=$1
-  local target=$2
-  local bbox
-  local wkt
- 
-  wkt="$( ciop-casmeta -f "dct:spatial" "${dataset_ref}" )"
-
-  [ -n "${wkt}" ] && bbox="$( mbr.py "${wkt}" )" || return 1
-
-  wdir=${PWD}/.wdir
-  mkdir ${wdir}
-  mkdir -p ${target}
-
-  target=$( cd ${target} && pwd )
-
-  cd ${wdir}
-  construct_dem.sh dem ${bbox} SRTM3 || return 1
-  
-
-  cp -v ${wdir}/dem/final_dem.dem ${target}
-  cp -v ${wdir}/dem/input.doris_dem ${target}
-
-  sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
-  cd - &> /dev/null
-
-  rm -fr ${wdir}
-  return 0
-}
 
 main() {
   local res
@@ -129,34 +99,20 @@ main() {
   ln -s ${master}   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
-
-  ciop-log "INFO" "Create DEM"
-  dem ${master_ref} ${TMPDIR}/DEM
-  [ $? -ne 0 ] && return ${ERR_DEM}
  
   # TODO check with expert what are ALL the processing steps for the master
+  
+
+  MAS_WIDTH=`grep WIDTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
+  MAS_LENGTH=`grep FILE_LENGTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
+
   ciop-log "INFO" "Will run step_master_setup"
-  cp ${STAMPS}/ROI_PAC_SCR/master_crop.in ${master_folder}/master_crop.in 
+  echo "first_l 1" > master_crop.in
+  echo "last_l $MAS_LENGTH" >> master_crop.in
+  echo "first_p 1" >> master_crop.in
+  echo "last_p $MAS_WIDTH" >> master_crop.in
   step_master_setup
   [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
-
-  # moving to INSAR_master date
-  cd ${TMPDIR}/INSAR_${sensing_date}
-  [ "${orbits}" == "ODR" ] && {
-    ciop-log "INFO" "Will run step_master_orbit_ODR"
- 
-    step_master_orbit_ODR
-    [ $? -ne 0 ] && return ${ERR_MASTER_ORBIT_ODR}
-  } 
-   
-  ciop-log "INFO" "Will run step_master_timing"
-  # update timimg.dorisin with the values from the DEM
-  head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${sensing_date}/timing.dorisin
-  cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${sensing_date}/timing.dorisin  
-  tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${sensing_date}/timing.dorisin
-
-  step_master_timing
-  [ $? -ne 0 ] && return ${ERR_MASTER_TIMING}  
 
   # package 
   cd ${TMPDIR}/SLC
@@ -168,7 +124,7 @@ main() {
   rm -f txt.tgz 
  
   cd ${TMPDIR}
-  tar cvfz master_${sensing_date}.tgz DEM SLC INSAR_${sensing_date} 
+  tar cvfz master_${sensing_date}.tgz SLC INSAR_${sensing_date} 
 #${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
   master_slc_ref="$( ciop-publish -a ${TMPDIR}/master_${sensing_date}.tgz )"
@@ -180,7 +136,7 @@ main() {
 }
 
 cat | main 
-res=$?
-[ ${res} -ne 0 ] && exit ${res}
-  
-[ "${mode}" != "test" ] && exit 0
+#res=$?
+#[ ${res} -ne 0 ] && exit ${res}
+#[ "${mode}" != "test" ] && exit 0
+exit ${SUCCESS}

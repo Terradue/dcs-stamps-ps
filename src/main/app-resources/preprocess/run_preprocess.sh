@@ -121,6 +121,11 @@ while read line; do
 
 done 
 
+master_ref="$( ciop-getparam master )"
+scene="$( ciop-copy -f -U -O ${RAW} ${line} 2> /dev/null )"
+
+
+
 }
 cat | main
 exit ${SUCCESS}
