@@ -13,6 +13,9 @@ source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
 # source StaMPS
 source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 
+# source sar helpers and functions
+set_env
+
 # define the exit codes
 SUCCESS=0
 ERR_ORBIT_FLAG=5
