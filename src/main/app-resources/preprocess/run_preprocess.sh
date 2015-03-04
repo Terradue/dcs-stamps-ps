@@ -77,7 +77,7 @@ first=TRUE
 # download data into $RAW
 while read line; do 
    	
-	IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$input"
+	IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$line"
   
 	ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$scene_ref"
     	[ ${first} == "TRUE" ] && {

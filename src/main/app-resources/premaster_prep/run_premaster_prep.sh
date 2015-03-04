@@ -136,7 +136,6 @@ main() {
     echo "${master_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
   done
 }
-
 cat | main
 res=$?
 exit ${res}
