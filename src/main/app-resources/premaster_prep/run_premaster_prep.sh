@@ -1,6 +1,6 @@
 #!/bin/bash
 mode=$1
-set -x
+
 
 export PATH=${_CIOP_APPLICATION_PATH}/master_slc/bin:$PATH
 
@@ -73,7 +73,7 @@ main() {
   
   ciop-log "INFO" "Retrieving master"
 #  master=$( get_data ${master_ref} ${TMPDIR} )
-   master=echo ${master_ref} | ciop-copy -o  ${TMPDIR}
+   master=`echo ${master_ref} | ciop-copy -o  ${TMPDIR}`
   [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
   sensing_date=$( get_sensing_date ${master} )
