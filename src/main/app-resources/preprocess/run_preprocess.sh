@@ -28,6 +28,9 @@ ERR_LINK_RAW=15
 ERR_SLC=17
 ERR_SLC_TAR=21
 ERR_SLC_PUBLISH=23
+ERR_STEP_ORBIT=25
+ERR_STEP_COARSE=27
+
 
 # add a trap to exit gracefully
 cleanExit() {
@@ -45,6 +48,8 @@ ${ERR_LINK_RAW}) msg="Failed to link the raw data to SLC folder";;
 ${ERR_SLC}) msg="Failed to focalize raw data with ROI-PAC";;
 ${ERR_SLC_TAR}) msg="Failed to create archive with scene";;
 ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with slc";;
+${ERR_STEP_ORBIT}) msg="Failed to process step_orbit";;
+${ERR_STEP_COARSE}) msg="Failed to process step_coarse";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
@@ -133,10 +138,12 @@ while read line; do
 	#cp -f SLC/slave.res .
 	#cp -f ${TMPDIR}/INSAR_$master_date/master.res .
 	step_orbit
-
+	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
+	
 	# step_coarse (image coarse correlation)	
-	#cp $DORIS_SCR/coarse.dorisin
-	#step_coarse
+	#cp $DORIS_SCR/coarse.dorisin .
+	step_coarse
+	[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
         # publish for next node
         cd ${TMPDIR}/PROCESS/SLC
@@ -144,24 +151,19 @@ while read line; do
         tar cvfz ${sensing_date}.tgz ${sensing_date}
         [ $? -ne 0 ] && return ${ERR_SLC_TAR}
 
+	cd ${TMPDIR}/PROCESS/INSAR_${master_date}
+        ciop-log "INFO" "create tar"
+        tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
+        [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
         ciop-log "INFO" "Publishing"
         ciop-publish ${TMPDIR}/PROCESS/SLC/${sensing_date}.tgz
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
 
+	ciop-log "INFO" "Publishing"
+        ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
+        [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 done
-
-#master_ref="$( ciop-getparam master )"
-
-#sensing_date=$( get_sensing_date ${master_ref} )
-#[ $? -ne 0 ] && return ${ERR_SENSING_DATE}
-
-#cd ${TMPDIR}/INSAR_$master_ref
-#mkdir $sensing_date
-#cd $sensing_date
-#step_orbit
-#step_coarse
-#cd ../
-
 }
 cat | main
 exit ${SUCCESS}
