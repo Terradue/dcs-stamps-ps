@@ -137,6 +137,7 @@ echo "last_p $MAS_WIDTH" >> master_crop.in
 step_master_setup
 [ $? -ne 0 ] && return ${ERR_SETUP_MASTER}
 
+
 }
 cat | main
 #res=$?
