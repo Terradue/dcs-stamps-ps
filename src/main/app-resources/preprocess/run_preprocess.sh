@@ -151,7 +151,7 @@ ciop-log "INFO" "Master Date: $master_date"
 
 cd ${TMPDIR}/$PROCESS/SLC
 
-while slave_date in `ls -d */ | awk -F"/" $'{print $1}'`
+while slave_date in `ls -d */ | awk -F"/" $'{print $1}'`;do
 	
 	cd ${PROCESS}/INSAR_${master_date}
 	mkdir ${slave_date}
