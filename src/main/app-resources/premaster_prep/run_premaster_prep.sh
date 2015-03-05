@@ -118,22 +118,23 @@ main() {
 
   # package 
   cd ${TMPDIR}/SLC
-  tar cvfz txt.tgz ar.txt looks.txt
-  [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
+ # tar cvfz txt.tgz ar.txt looks.txt
+ # [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
    
-  txt_ref="$( ciop-publish -a ${TMPDIR}/SLC/txt.tgz )" 
-  [ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
-  rm -f txt.tgz 
+  #txt_ref="$( ciop-publish -a ${TMPDIR}/SLC/txt.tgz )" 
+  #[ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
+  #rm -f txt.tgz 
  
   cd ${TMPDIR}
-  tar cvfz master_${sensing_date}.tgz SLC INSAR_${sensing_date} 
+  tar cvfz master_${sensing_date}.tgz INSAR_${sensing_date} 
 #${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
   master_slc_ref="$( ciop-publish -a ${TMPDIR}/master_${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read scene_ref; do
-    echo "${master_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
+    #echo "${master_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
+    echo "${master_slc_ref},${scene_ref}" | ciop-publish -s
   done
 }
 cat | main
