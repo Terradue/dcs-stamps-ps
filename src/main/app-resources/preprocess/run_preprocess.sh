@@ -71,6 +71,7 @@ first=TRUE
 # download data into $RAW
 while read line; do
 
+	mkdir $RAW
 	ciop-log "INFO" "Processing input: $line"
 #        IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$line"
         IFS=',' read -r master_slc_ref scene_ref <<< "$line"
@@ -81,7 +82,7 @@ while read line; do
 #        ciop-copy -O ${SLC} ${txt_ref}
 #	[ $? -ne 0 ] && return ${ERR_MASTER_SLC}
  #       first=FALSE
-  #      }
+  #    }
 
         scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
         [ $? -ne 0 ] && return ${ERR_SCENE}
@@ -91,15 +92,18 @@ while read line; do
         # which orbits (defined in application.xml)
         orbits="$( get_orbit_flag )"
         [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
-
+	ciop-log "INFO" "Orbits used: ${orbits}" 
+	
         ciop-log "INFO" "Get sensing date"
         sensing_date=$( get_sensing_date ${scene} )
         [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
+ 	ciop-log "INFO" "Sensing date: ${sensing_date}"        
 
-        ciop-log "INFO" "Get mission"
+	ciop-log "INFO" "Get mission"
         mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
         [ $? -ne 0 ] && return ${ERR_MISSION}
         [ ${mission} == "asar" ] && flag="envi"
+	ciop-log "INFO" "Satellite: ${mission}"   
 
         get_aux ${mission} ${sensing_date} ${orbits}
         [ $? -ne 0 ] && return ${ERR_AUX}
@@ -109,6 +113,7 @@ while read line; do
         link_raw $RAW $PROCESS
         [ $? -ne 0 ] && return ${ERR_LINK_RAW}
 
+	ciop-log "INFO" "Focalize slaves"
         # focalize SLC
         scene_folder=${SLC}/${sensing_date}
         cd ${scene_folder}
@@ -126,6 +131,9 @@ while read line; do
         ciop-log "INFO" "Publishing"
         ciop-publish ${SLC}/${sensing_date}.tgz
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
+
+	rm $RAW
+	cd -
 done
 
 #ciop-copy -O ${PROCESS} ${master_slc_ref}
