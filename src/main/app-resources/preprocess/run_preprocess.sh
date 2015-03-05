@@ -103,7 +103,7 @@ while read line; do
         mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
         [ $? -ne 0 ] && return ${ERR_MISSION}
         [ ${mission} == "asar" ] && flag="envi"
-	ciop-log "INFO" "Satellite: ${mission}"   
+	ciop-log "INFO" "Sensor: ${mission}"   
 
         get_aux ${mission} ${sensing_date} ${orbits}
         [ $? -ne 0 ] && return ${ERR_AUX}
@@ -132,7 +132,7 @@ while read line; do
         ciop-publish ${SLC}/${sensing_date}.tgz
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
 
-	rm $RAW
+	rm -r $RAW
 	cd -
 done
 
