@@ -42,7 +42,7 @@ msg=""
 case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
 ${ERR_SCENE_COPY}) msg="Failed to retrieve scene"
-{ERR_ORBIT_FLAG}) msg="Failed to determine which orbit files to use (check your application.xml)";;
+${ERR_ORBIT_FLAG}) msg="Failed to determine which orbit files to use (check your application.xml)";;
 ${ERR_SCENE_EMPTY}) msg="Failed to retrieve scene";;
 ${ERR_SENSING_DATE}) msg="Couldn't retrieve scene sensing date";;
 ${ERR_MISSION}) msg="Couldn't determine the satellite mission for the scene";;
