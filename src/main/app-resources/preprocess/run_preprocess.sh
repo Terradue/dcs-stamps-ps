@@ -13,6 +13,7 @@ source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 # source sar helpers and functions
 set_env
 
+chmod -R 777 $TMPDIR
 #--------------------------------
 #       2) Error Handling       
 #--------------------------------
@@ -80,7 +81,7 @@ mkdir -p $RAW
 mkdir -p $PROCESS
 
 first=TRUE
-chmod -R 777 $TMPDIR
+
 # download data into $RAW
 while read line; do
 
@@ -89,7 +90,7 @@ while read line; do
         ciop-log "DEBUG" "1:$master_slc_ref 2:$txt_ref 3:$scene_ref"
         [ ${first} == "TRUE" ] && {
         ciop-copy -O ${SLC} ${txt_ref}
-        [ $? -ne 0 ] && return ${ERR_MASTER_SLC}
+	[ $? -ne 0 ] && return ${ERR_MASTER_SLC}
         first=FALSE
         }
 
@@ -127,52 +128,60 @@ while read line; do
         ${slc_bin}
         [ $? -ne 0 ] && return ${ERR_SLC}
 
-	master_ref="$( ciop-getparam master )"
-	master_date=$( get_sensing_date ${master_ref} )
-
-	ciop-log "INFO" "Master: $master_ref"
-	ciop-log "INFO" "Master Date: $master_date"
-
-	mkdir -p $PROCESS/INSAR_${master_date}
-	[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
-
-	cd ${TMPDIR}/INSAR_$master_date
-	mkdir $sensing_date
-	cd $sensing_date
 	
-	ciop-log "INFO" "step_orbits for ${sensing_date} "
-	# step_orbit (extract orbits)
-	ln -s ${TMPDIR}/PROCESS/SLC/${sensing_date} SLC
-	cp -f SLC/slave.res .
-	cp -f ${TMPDIR}/INSAR_$master_date/master.res .
-	step_orbit
-	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
-	
-	ciop-log "INFO" "step_coarse for ${sensing_date} "
-	# step_coarse (image coarse correlation)	
-	#cp $DORIS_SCR/coarse.dorisin .
-	step_coarse
-	[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
-
         # publish for next node
         cd ${TMPDIR}/PROCESS/SLC
         ciop-log "INFO" "create tar"
         tar cvfz ${sensing_date}.tgz ${sensing_date}
         [ $? -ne 0 ] && return ${ERR_SLC_TAR}
 
-	cd ${TMPDIR}/PROCESS/INSAR_${master_date}
-        ciop-log "INFO" "create tar"
-        tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
-        [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
-
         ciop-log "INFO" "Publishing"
         ciop-publish ${TMPDIR}/PROCESS/SLC/${sensing_date}.tgz
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
+done
+
+ciop-copy -O ${TMPDIR}/PROCESS ${master_slc_ref}
+ciop-log "INFO" "step_orbits for ${sensing_date} "
+
+master_ref="$( ciop-getparam master )"
+master_date=$( get_sensing_date ${master_ref} )
+ciop-log "INFO" "Master: $master_ref"
+ciop-log "INFO" "Master Date: $master_date"
+[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
+
+cd ${TMPDIR}/$PROCESS/SLC
+
+while slave_date in `ls -d */ | awk -F"/" $'{print $1}'`
+	
+	cd ${PROCESS}/INSAR_${master_date}
+	mkdir ${slave_date}
+	cd ${slave_date}
+
+	# step_orbit (extract orbits)
+	ln -s ${TMPDIR}/PROCESS/SLC/${slave_date} SLC
+	#cp -f SLC/slave.res .
+	#cp -f ${TMPDIR}/INSAR_$master_date/master.res .
+	ciop-log "INFO" "step_orbit for ${sensing_date} "
+	step_orbit
+	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
+	
+	ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
+	#cp $DORIS_SCR/coarse.dorisin .
+	step_coarse
+	[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+
+	cd ../
+        ciop-log "INFO" "create tar"
+        tar cvfz INSAR_${slave_date}.tgz ${slave_date}
+        [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 	ciop-log "INFO" "Publishing"
-        ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
+        ciop-publish ${TMPDIR}/INSAR_${master_date}/INSAR_${sensing_date}.tgz
         [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-done
+
+#	ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
+done 
+
 }
 cat | main
 exit ${SUCCESS}
