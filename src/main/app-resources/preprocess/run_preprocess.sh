@@ -80,7 +80,7 @@ mkdir -p $RAW
 mkdir -p $PROCESS
 
 first=TRUE
-
+chmod -R 777 $TMPDIR
 # download data into $RAW
 while read line; do
 
