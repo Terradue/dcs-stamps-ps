@@ -6,7 +6,7 @@ set_env() {
   export TMPDIR=/tmp/$( uuidgen )
   export RAW=${TMPDIR}/RAW
   export PROCESS=${TMPDIR}/PROCESS
-  export SLC=${TMPDIR}/PROCESS/SLC
+  export SLC=${PROCESS}/SLC
   export VOR_DIR=${TMPDIR}/VOR
   export INS_DIR=${TMPDIR}/INS
   mkdir -p ${INS_DIR}

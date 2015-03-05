@@ -89,7 +89,7 @@ main() {
   # [ ${mission} == "ers" ] && flag="ers"
   # [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
-  master_folder=${PROCESS}/${sensing_date}
+  master_folder=${SLC}/${sensing_date}
   mkdir -p ${master_folder}
   
   get_aux ${mission} ${sensing_date} ${orbits} 
