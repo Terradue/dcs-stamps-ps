@@ -60,11 +60,12 @@ trap cleanExit EXIT
 main() {
   local res
 
-  chmod -R 777 $TMPDIR
+  
   # creates the adore directory structure
   ciop-log "INFO" "creating the directory structure"
   set_env
   
+  chmod -R 777 $TMPDIR
   # which orbits
   orbits="$( get_orbit_flag )"
   [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
