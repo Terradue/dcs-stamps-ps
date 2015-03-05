@@ -21,7 +21,7 @@ chmod -R 777 $TMPDIR
 # define the exit codes
 SUCCESS=0
 ERR_ORBIT_FLAG=5
-${ERR_SCENE_COPY}
+ERR_SCENE_COPY=6
 ERR_SCENE_EMPTY=7
 ERR_SENSING_DATE=9
 ERR_MISSION=11
@@ -42,7 +42,7 @@ msg=""
 case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
 ${ERR_SCENE_COPY}) msg="Failed to retrieve scene"
-${ERR_ORBIT_FLAG}) msg="Failed to determine which orbit files to use (check your application.xml)";;
+${ERR_ORBIT_FLAG}) msg="Failed to determine which orbit files to use";;
 ${ERR_SCENE_EMPTY}) msg="Failed to retrieve scene";;
 ${ERR_SENSING_DATE}) msg="Couldn't retrieve scene sensing date";;
 ${ERR_MISSION}) msg="Couldn't determine the satellite mission for the scene";;
