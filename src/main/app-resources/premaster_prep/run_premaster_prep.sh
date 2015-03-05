@@ -60,6 +60,7 @@ trap cleanExit EXIT
 main() {
   local res
 
+  chmod 777 $TMPDIR
   # creates the adore directory structure
   ciop-log "INFO" "creating the directory structure"
   set_env

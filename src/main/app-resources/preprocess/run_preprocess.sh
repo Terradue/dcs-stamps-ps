@@ -20,6 +20,7 @@ set_env
 # define the exit codes
 SUCCESS=0
 ERR_ORBIT_FLAG=5
+${ERR_SCENE_COPY}
 ERR_SCENE_EMPTY=7
 ERR_SENSING_DATE=9
 ERR_MISSION=11
@@ -39,6 +40,7 @@ local msg
 msg=""
 case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
+${ERR_SCENE_COPY}) msg="Failed to retrieve scene"
 {ERR_ORBIT_FLAG}) msg="Failed to determine which orbit files to use (check your application.xml)";;
 ${ERR_SCENE_EMPTY}) msg="Failed to retrieve scene";;
 ${ERR_SENSING_DATE}) msg="Couldn't retrieve scene sensing date";;
@@ -127,19 +129,26 @@ while read line; do
 
 	master_ref="$( ciop-getparam master )"
 	master_date=$( get_sensing_date ${master_ref} )
+
+	ciop-log "INFO" "Master: $master_ref"
+	ciop-log "INFO" "Master Date: $master_date"
+
+	mkdir -p $PROCESS/INSAR_${master_date}
 	[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
 
 	cd ${TMPDIR}/INSAR_$master_date
 	mkdir $sensing_date
 	cd $sensing_date
 	
+	ciop-log "INFO" "step_orbits for ${sensing_date} "
 	# step_orbit (extract orbits)
 	ln -s ${TMPDIR}/PROCESS/SLC/${sensing_date} SLC
-	#cp -f SLC/slave.res .
-	#cp -f ${TMPDIR}/INSAR_$master_date/master.res .
+	cp -f SLC/slave.res .
+	cp -f ${TMPDIR}/INSAR_$master_date/master.res .
 	step_orbit
 	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
 	
+	ciop-log "INFO" "step_coarse for ${sensing_date} "
 	# step_coarse (image coarse correlation)	
 	#cp $DORIS_SCR/coarse.dorisin .
 	step_coarse
