@@ -65,7 +65,6 @@ main() {
   ciop-log "INFO" "creating the directory structure"
   set_env
   
-  chmod -R 777 $TMPDIR
   # which orbits
   orbits="$( get_orbit_flag )"
   [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
@@ -90,7 +89,7 @@ main() {
   # [ ${mission} == "ers" ] && flag="ers"
   # [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
-  master_folder=${TMPDIR}/SLC/${sensing_date}
+  master_folder=${PROCESS}/${sensing_date}
   mkdir -p ${master_folder}
   
   get_aux ${mission} ${sensing_date} ${orbits} 
@@ -118,7 +117,7 @@ main() {
   [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 
   # package 
-  cd ${TMPDIR}/SLC
+ # cd ${SLC}
  # tar cvfz txt.tgz ar.txt looks.txt
  # [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
    
@@ -126,17 +125,19 @@ main() {
   #[ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
   #rm -f txt.tgz 
  
-  cd ${TMPDIR}
+  cd ${PROCESS}
   tar cvfz master_${sensing_date}.tgz INSAR_${sensing_date} 
 #${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
-  master_slc_ref="$( ciop-publish -a ${TMPDIR}/master_${sensing_date}.tgz )"
+  master_slc_ref="$( ciop-publish -a ${PROCESS}/master_${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read scene_ref; do
     #echo "${master_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
     echo "${master_slc_ref},${scene_ref}" | ciop-publish -s
   done
+
+chmod -R 777 $TMPDIR
 }
 cat | main
 res=$?

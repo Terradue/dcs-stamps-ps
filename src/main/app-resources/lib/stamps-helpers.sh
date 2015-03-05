@@ -4,11 +4,15 @@ set_env() {
 
   # shorter temp path
   export TMPDIR=/tmp/$( uuidgen )
-  export SLC=${TMPDIR}/SLC
+  export RAW=${TMPDIR}/RAW
+  export PROCESS=${TMPDIR}/PROCESS
+  export SLC=${TMPDIR}/PROCESS/SLC
   export VOR_DIR=${TMPDIR}/VOR
   export INS_DIR=${TMPDIR}/INS
   mkdir -p ${INS_DIR}
-  mkdir -p ${TMPDIR}/SLC
+  mkdir -p ${RAW}	
+  mkdir -p ${PROCESS}
+  mkdir -p ${SLC}
   mkdir -p ${TMPDIR}/DEM
   return 0
 }

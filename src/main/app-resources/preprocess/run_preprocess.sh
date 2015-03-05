@@ -13,7 +13,7 @@ source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 # source sar helpers and functions
 set_env
 
-chmod -R 777 $TMPDIR
+
 #--------------------------------
 #       2) Error Handling       
 #--------------------------------
@@ -67,24 +67,11 @@ trap cleanExit EXIT
 main() {
 local res
 
-# Inputlist path
-INPUT=${_CIOP_APPLICATION_PATH}/inputs/inputlist
-
-# Folder where raw data should be stored
-RAW=${TMPDIR}/RAW
-
-# PROCESS folder
-export PROCESS=${TMPDIR}/PROCESS
-
-# create folders
-mkdir -p $RAW
-mkdir -p $PROCESS
-
 first=TRUE
-
 # download data into $RAW
 while read line; do
 
+	ciop-log "INFO" "Processing input: $line"
 #        IFS=',' read -r master_slc_ref txt_ref scene_ref <<< "$line"
         IFS=',' read -r master_slc_ref scene_ref <<< "$line"
 
@@ -123,26 +110,25 @@ while read line; do
         [ $? -ne 0 ] && return ${ERR_LINK_RAW}
 
         # focalize SLC
-        scene_folder=${TMPDIR}/PROCESS/SLC/${sensing_date}
+        scene_folder=${SLC}/${sensing_date}
         cd ${scene_folder}
         slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
         ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
         ${slc_bin}
         [ $? -ne 0 ] && return ${ERR_SLC}
 
-	
         # publish for next node
-        cd ${TMPDIR}/PROCESS/SLC
+        cd ${SLC}
         ciop-log "INFO" "create tar"
         tar cvfz ${sensing_date}.tgz ${sensing_date}
         [ $? -ne 0 ] && return ${ERR_SLC_TAR}
 
         ciop-log "INFO" "Publishing"
-        ciop-publish ${TMPDIR}/PROCESS/SLC/${sensing_date}.tgz
+        ciop-publish ${SLC}/${sensing_date}.tgz
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
 done
 
-#ciop-copy -O ${TMPDIR}/PROCESS ${master_slc_ref}
+#ciop-copy -O ${PROCESS} ${master_slc_ref}
 #ciop-log "INFO" "step_orbits for ${sensing_date} "
 
 #master_ref="$( ciop-getparam master )"
@@ -183,7 +169,7 @@ done
 
 #	ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
 #done 
-
+chmod -R 777 $TMPDIR
 }
 cat | main
 exit ${SUCCESS}
