@@ -137,7 +137,7 @@ main() {
     echo "${master_slc_ref},${scene_ref}" | ciop-publish -s
   done
 
-chmod -R 777 $TMPDIR
+chmod -R 777 $TMPDIR # not for final version
 }
 cat | main
 res=$?

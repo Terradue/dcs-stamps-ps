@@ -169,7 +169,7 @@ done
 
 #	ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
 #done 
-chmod -R 777 $TMPDIR
+chmod -R 777 $TMPDIR # not for final version
 }
 cat | main
 exit ${SUCCESS}
