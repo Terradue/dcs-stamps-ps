@@ -50,7 +50,8 @@ function cleanExit() {
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
     "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-  [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+ # [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+   [ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 

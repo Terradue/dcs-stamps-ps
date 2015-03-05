@@ -57,6 +57,7 @@ esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
 #[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -136,47 +137,47 @@ while read line; do
 	cd -
 done
 
-#ciop-copy -O ${PROCESS} ${master_slc_ref}
-#ciop-log "INFO" "step_orbits for ${sensing_date} "
+ciop-copy -O ${PROCESS} ${master_slc_ref}
+ciop-log "INFO" "step_orbits for ${sensing_date} "
 
-#master_ref="$( ciop-getparam master )"
-#master_date=$( get_sensing_date ${master_ref} )
-#ciop-log "INFO" "Master: $master_ref"
-#ciop-log "INFO" "Master Date: $master_date"
-#[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
+master_ref="$( ciop-getparam master )"
+master_date=$( get_sensing_date ${master_ref} )
+ciop-log "INFO" "Master: $master_ref"
+ciop-log "INFO" "Master Date: $master_date"
+[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
 
-#cd ${TMPDIR}/$PROCESS/SLC
+cd ${SLC}
 
-#while slave_date in `ls -d */ | awk -F"/" $'{print $1}'`; do
+while slave_date in `ls -d */ | awk -F"/" $'{print $1}'`; do
 	
-#	cd ${PROCESS}/INSAR_${master_date}
-#	mkdir ${slave_date}
-#	cd ${slave_date}
+	cd ${PROCESS}/INSAR_${master_date}
+	mkdir ${slave_date}
+	cd ${slave_date}
 
 	# step_orbit (extract orbits)
-#	ln -s ${TMPDIR}/PROCESS/SLC/${slave_date} SLC
+	ln -s ${SLC}/${slave_date} SLC
 	#cp -f SLC/slave.res .
 	#cp -f ${TMPDIR}/INSAR_$master_date/master.res .
-#	ciop-log "INFO" "step_orbit for ${sensing_date} "
-#	step_orbit
-#	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
+	ciop-log "INFO" "step_orbit for ${sensing_date} "
+	step_orbit
+	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
 	
-#	ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
+	ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
 	#cp $DORIS_SCR/coarse.dorisin .
-#	step_coarse
-#	[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+	step_coarse
+	[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
-#	cd ../
- #       ciop-log "INFO" "create tar"
-  #      tar cvfz INSAR_${slave_date}.tgz ${slave_date}
-   #     [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+	cd ../
+        ciop-log "INFO" "create tar"
+        tar cvfz INSAR_${slave_date}.tgz ${slave_date}
+        [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-	#ciop-log "INFO" "Publishing"
-        #ciop-publish ${TMPDIR}/INSAR_${master_date}/INSAR_${sensing_date}.tgz
-        #[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+	ciop-log "INFO" "Publishing"
+        ciop-publish ${TMPDIR}/INSAR_${master_date}/INSAR_${sensing_date}.tgz
+        [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
-#	ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
-#done 
+	ciop-publish ${TMPDIR}/INSAR_${master_date}/${sensing_date}.tgz
+done 
 chmod -R 777 $TMPDIR # not for final version
 }
 cat | main
