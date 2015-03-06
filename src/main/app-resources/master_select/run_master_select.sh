@@ -104,7 +104,7 @@ while read line; do
 	fi
 
 	ciop-log "INFO" "Retrieve folder: ${insar_slaves}"
-	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/ $( echo ${insar_slaves} | tr -d "\t")  
+	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/ ${insar_slave}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
 done
