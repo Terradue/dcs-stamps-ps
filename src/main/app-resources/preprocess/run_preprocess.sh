@@ -155,10 +155,9 @@ premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
 ciop-log "INFO" "Pre-Master Date: $premaster_date"
 
 # loop in all slave folders in $PROCESS/INSAR_$MASTER_DATE to do step_orbit and step_coarse
-cd ${SLC}
-
 while read line; do
 
+	ciop-log "INFO" "Line: ${line} "
 	IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
 
 	ciop-log "INFO" "Scene ref: ${scene_ref} " ###
