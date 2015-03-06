@@ -153,7 +153,7 @@ ciop-log "INFO" "Pre-Master Date: $premaster_date"
 
 # loop in all slave folders in $PROCESS/INSAR_$MASTER_DATE to do step_orbit and step_coarse
 cd ${SLC}
-while slave_date in `ls -d */ | awk -F"/" $'{print $1}'`; do
+for slave_date in `ls -d */ | awk -F"/" $'{print $1}'`; do
 	
 	cd ${PROCESS}/INSAR_${premaster_date}
 	mkdir ${slave_date}
