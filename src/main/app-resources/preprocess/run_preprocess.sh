@@ -147,14 +147,8 @@ done
 ciop-copy -O ${PROCESS} ${premaster_slc_ref}
 [ $? -ne 0 ] && return ${ERR_MASTER}
 
-# get reference master scene
-premaster_ref="$( ciop-getparam master )"
-[ $? -ne 0 ] && return ${ERR_MASTER_REF}
-
-premaster_date=$( get_sensing_date ${premaster_ref} )
+premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
 [ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
-
-ciop-log "INFO" "Pre-Master: $premaster_ref"
 ciop-log "INFO" "Pre-Master Date: $premaster_date"
 
 # loop in all slave folders in $PROCESS/INSAR_$MASTER_DATE to do step_orbit and step_coarse
