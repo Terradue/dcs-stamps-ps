@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="stamps-ps">
+  <jobTemplates>
+	<jobTemplate id="premaster_prep">
+      <streamingExecutable>/application/premaster_prep/run_premaster_prep.sh</streamingExecutable>
+ 	<defaultParameters>
+        <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+        <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">file:///tmp/data/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1</parameter>
+      </defaultParameters>
+      <defaultJobconf>
+      	<property id="ciop.job.max.tasks">1</property>
+        <property id="mapred.task.timeout">9900000000</property>
+    </defaultJobconf>
+    </jobTemplate>
+    <jobTemplate id="preprocess">
+      <streamingExecutable>/application/preprocess/run_preprocess.sh</streamingExecutable>
+ 	<defaultParameters>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	  <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">file:///tmp/data/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1</parameter>
+	</defaultParameters>
+        <defaultJobconf>
+          <property id="mapred.task.timeout">9900000000</property>
+        </defaultJobconf>
+    </jobTemplate>
+    <jobTemplate id="master_select">
+      <streamingExecutable>/application/master_select/run_master_select.sh</streamingExecutable>
+	<defaultParameters>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	</defaultParameters>
+        <defaultJobconf>
+	<property id="ciop.job.max.tasks">1</property>
+        <property id="mapred.task.timeout">9900000000</property>
+        </defaultJobconf>
+    </jobTemplate>
+  </jobTemplates>
+  <workflow id="dcs-stamps-ps" title="StaMPS" abstract="StaMPS">
+    <workflowVersion>1.0</workflowVersion>
+     <node id="node_premaster_prep">
+      <job id="premaster_prep" />
+      <sources>
+         <source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="file:urls">/application/inputs/input.list</source>
+      </sources>
+      <parameters/>
+    </node>
+   <node id="node_preprocess">
+        <job id="preprocess" />
+          <sources>
+          <source refid="wf:node">node_premaster_prep</source>
+          </sources>
+          <parameters/>
+      </node>
+    <node id="node_master_select">
+        <job id="master_select" />
+          <sources>
+          <source refid="wf:node">node_preprocess</source>
+          </sources>
+          <parameters/>
+      </node>
+   </workflow>
+</application>

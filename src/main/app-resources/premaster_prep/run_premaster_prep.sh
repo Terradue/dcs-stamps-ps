@@ -70,18 +70,19 @@ main() {
   orbits="$( get_orbit_flag )"
   [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
   
-  master_ref="$( ciop-getparam master )"
-  
-  ciop-log "INFO" "Retrieving master"
-#  master=$( get_data ${master_ref} ${TMPDIR} )
-   master=`echo ${master_ref} | ciop-copy -o ${TMPDIR} -f -`
+  premaster_ref="$( ciop-getparam master )"
+  [ $? -ne 0 ] && return ${ERR_MASTER_REF}
+
+   ciop-log "INFO" "Retrieving master"
+#  master=$( get_data ${master_ref} ${TMPDIR} ) #for final version
+   premaster=`echo ${premaster_ref} | ciop-copy -o ${RAW} -f -`
    [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
   ciop-log "INFO" "Get sensing date"
-  sensing_date=$( get_sensing_date ${master} )
+  sensing_date=$( get_sensing_date ${premaster} )
   [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
   
-  mission=$( get_mission ${master} | tr "A-Z" "a-z" )
+  mission=$( get_mission ${premaster} | tr "A-Z" "a-z" )
   [ $? -ne 0 ] && return ${ERR_MISSION_MASTER}
   [ ${mission} == "asar" ] && flag="envi"
   
@@ -90,16 +91,16 @@ main() {
   # [ ${mission} == "ers" ] && flag="ers"
   # [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
-  master_folder=${SLC}/${sensing_date}
-  mkdir -p ${master_folder}
+  premaster_folder=${SLC}/${sensing_date}
+  mkdir -p ${premaster_folder}
   
   get_aux ${mission} ${sensing_date} ${orbits} 
   [ $? -ne 0 ] && return ${ERR_AUX}
   
-  cd ${master_folder}
+  cd ${premaster_folder}
   slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
   ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
-  ln -s ${master}   
+  ln -s ${premaster}   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
  
@@ -127,15 +128,15 @@ main() {
   #rm -f txt.tgz 
  
   cd ${PROCESS}
-  tar cvfz master_${sensing_date}.tgz INSAR_${sensing_date} 
+  tar cvfz premaster_${sensing_date}.tgz INSAR_${sensing_date} 
 #${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
-  master_slc_ref="$( ciop-publish -a ${PROCESS}/master_${sensing_date}.tgz )"
+  premaster_slc_ref="$( ciop-publish -a ${PROCESS}/premaster_${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read scene_ref; do
-    #echo "${master_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
-    echo "${master_slc_ref},${scene_ref}" | ciop-publish -s
+    #echo "${premaster_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
+    echo "${premaster_slc_ref},${scene_ref}" | ciop-publish -s
   done
 
 chmod -R 777 $TMPDIR # not for final version

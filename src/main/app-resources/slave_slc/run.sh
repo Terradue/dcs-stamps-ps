@@ -51,6 +51,7 @@ cleanExit() {
 
 trap cleanExit EXIT
 
+
 main() {
   local res
 
