@@ -153,36 +153,38 @@ ciop-log "INFO" "Pre-Master Date: $premaster_date"
 
 # loop in all slave folders in $PROCESS/INSAR_$MASTER_DATE to do step_orbit and step_coarse
 cd ${SLC}
-for slave_date in `ls -d */ | awk -F"/" $'{print $1}'`; do
+
+while read line; do
+
+	IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
+
+	slave_date=`basename $scene_ref | cut -c 15-22`
+
+	if [$slave_date != $master_date];then
 	
-	cd ${PROCESS}/INSAR_${premaster_date}
-	mkdir ${slave_date}
-	cd ${slave_date}
+		cd ${PROCESS}/INSAR_${premaster_date}
+		mkdir ${slave_date}
+		cd ${slave_date}
 
-	# step_orbit (extract orbits)
-	ln -s ${SLC}/${slave_date} SLC
-	#cp -f SLC/slave.res .
-	#cp -f ${TMPDIR}/INSAR_$master_date/master.res .
-	ciop-log "INFO" "step_orbit for ${sensing_date} "
-	step_orbit
-	[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
+		# step_orbit (extract orbits)
+		ln -s ${SLC}/${slave_date} SLC
+		ciop-log "INFO" "step_orbit for ${sensing_date} "
+		step_orbit
+		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
 	
-	ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
-	#cp $DORIS_SCR/coarse.dorisin .
-	step_coarse
-	[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
+		step_coarse
+		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
-	cd ../
-        ciop-log "INFO" "create tar"
-        tar cvfz INSAR_${slave_date}.tgz ${slave_date}
-        [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+		cd ../
+        	ciop-log "INFO" "create tar"
+        	tar cvfz INSAR_${slave_date}.tgz ${slave_date}
+        	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-	ciop-log "INFO" "Publishing"
-        insar_slaves="$( ciop-publish ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
-        [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-
-	#echo "${insar_slaves}" | ciop-publish -s
-	
+		ciop-log "INFO" "Publishing"
+        	insar_slaves="$( ciop-publish ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
+        	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+	fi
 done 
 
 }
