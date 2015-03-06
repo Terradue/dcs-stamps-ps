@@ -90,7 +90,7 @@ while read line; do
 #       first=FALSE
 #       }
 
-        scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
+	scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
         [ $? -ne 0 ] && return ${ERR_SCENE}
         ciop-log "INFO" "Processing scene: $scene"
 
@@ -103,6 +103,9 @@ while read line; do
         sensing_date=$( get_sensing_date ${scene} )
         [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
  	ciop-log "INFO" "Sensing date: ${sensing_date}"        
+
+	# writing original image url for node master_select (need for newly master)
+	echo $scene_ref > ${sensing_date}.url	
 
 	ciop-log "INFO" "Get Sensor"
         mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
@@ -122,7 +125,7 @@ while read line; do
         # focalize SLC
         scene_folder=${SLC}/${sensing_date}
         cd ${scene_folder}
-        slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+        #slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
         ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
         ${slc_bin}
         [ $? -ne 0 ] && return ${ERR_SLC}
@@ -159,8 +162,9 @@ while read line; do
 	IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
 
 	slave_date=`basename $scene_ref | cut -c 15-22`
-
-	if [$slave_date != $master_date];then
+	ciop-log "INFO" "Slave date: ${slave_date} "
+	
+	if [ $slave_date != $master_date ];then
 	
 		cd ${PROCESS}/INSAR_${premaster_date}
 		mkdir ${slave_date}
@@ -169,11 +173,11 @@ while read line; do
 		# step_orbit (extract orbits)
 		ln -s ${SLC}/${slave_date} SLC
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
-		step_orbit
+		#step_orbit
 		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
 	
 		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
-		step_coarse
+		#step_coarse
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
 		cd ../
