@@ -22,9 +22,13 @@
           <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
-    <jobTemplate id="master_prep">
-      <streamingExecutable>/application/master_prep/run_master_prep.sh</streamingExecutable>
+    <jobTemplate id="master_select">
+      <streamingExecutable>/application/master_select/run_master_select.sh</streamingExecutable>
+	<defaultParameters>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	</defaultParameters>
         <defaultJobconf>
+	<property id="ciop.job.max.tasks">1</property>
         <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
@@ -42,6 +46,13 @@
         <job id="preprocess" />
           <sources>
           <source refid="wf:node">node_premaster_prep</source>
+          </sources>
+          <parameters/>
+      </node>
+    <node id="node_master_select">
+        <job id="master_select" />
+          <sources>
+          <source refid="wf:node">node_preprocess</source>
           </sources>
           <parameters/>
       </node>

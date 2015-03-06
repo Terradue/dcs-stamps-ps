@@ -55,6 +55,35 @@ esac
 }
 trap cleanExit EXIT
 
+dem() {
+  local dataset_ref=$1
+  local target=$2
+  local bbox
+  local wkt
+ 
+  wkt="$( ciop-casmeta -f "dct:spatial" "${dataset_ref}" )"
+  [ -n "${wkt}" ] && bbox="$( mbr.py "${wkt}" )" || return 1
+
+  wdir=${PWD}/.wdir
+  mkdir ${wdir}
+  mkdir -p ${target}
+
+  target=$( cd ${target} && pwd )
+
+  cd ${wdir}
+  construct_dem.sh dem ${bbox} SRTM3 || return 1
+  
+
+  cp -v ${wdir}/dem/final_dem.dem ${target}
+  cp -v ${wdir}/dem/input.doris_dem ${target}
+
+  sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
+  cd - &> /dev/null
+
+  rm -fr ${wdir}
+  return 0
+}
+
 main() {
 local res
 
@@ -63,38 +92,24 @@ premaster_date=""
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
-        #IFS=',' read -r premaster_slc_ref slc_folders insar_slaves <<< "$line"
+        IFS=',' read -r premaster_slc_ref slc_folders insar_slaves <<< "$line"
 
-	# divide input in premaster_slc_ref slc_folders & insar_slaves
-	echo "$line" | grep "INSAR_"
-        res=$?
-	if [ ${res} != 0 ]; then
-		IFS',' read -r premaster_slc_ref slc_folders <<< $line
-
-		if [ ! -d ${PROCESS}/INSAR_$premaster_date/ ]; then
+	if [ ! -d ${PROCESS}/INSAR_$premaster_date/ ]; then
 		
-			ciop-copy -O ${PROCESS} ${premaster_slc_ref}
-			[ $? -ne 0 ] && return ${ERR_PREMASTER}
+		ciop-copy -O ${PROCESS} ${premaster_slc_ref}
+		[ $? -ne 0 ] && return ${ERR_PREMASTER}
 	
-			premaster_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
-			ciop-log "INFO" "Pre-Master Date: $premaster_date"
-		fi
-	else
+		premaster_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
+		ciop-log "INFO" "Pre-Master Date: $premaster_date"
+	fi
 
-	insar_slaves=$line
-	
 	ciop-log "INFO" "Retrieve folder: ${insar_slaves}"
 	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/ $( echo ${insar_slaves} | tr -d "\t")  
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
 	ciop-log "INFO" "Unpack folder: ${insar_slaves}"
 	slave_date=`basename $line` 
-	#cd ${PROCESS}/INSAR_$premaster_date/
-	#tar xvf ${slave_date}
-	#[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}	
-	rm -f *.tgz
-
-	fi
+	
 done
 
 cd $PROCESS/INSAR_${premaster_date}
@@ -112,10 +127,6 @@ while read line; do
 		ciop-log "INFO" "Retrieving final master SLC"
 		ciop-copy -f -O ${SLC} $( echo ${slc_folders} | tr -d "\t")  
 		[ $? -ne 0 ] && return ${ERR_MASTER_COPY}
-
-	#tar xvf ${$master_date}.tgz
-	#[ $? -ne 0 ] && return ${ERR_MASTER_SLC_TAR}	
-	#rm -f *.tgz
 
 		cd ${SLC}/${masterdate}
 		MAS_WIDTH=`grep WIDTH  ${master_date}.slc.rsc | awk '{print $2}' `
@@ -138,8 +149,8 @@ while read line; do
 		insar_master="$( ciop-publish INSAR_${master_date}.tgz -a )"
 		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
-
-		master_ref=`more /application/inputs/input.list | grep $master_date` # check if input.list available from outside
+		# getting the original file url for dem fucntion
+		master_ref=`more $master_date.url`
 					
 		ciop-log "INFO" "Create DEM"
 		dem ${master_ref} ${TMPDIR}/DEM

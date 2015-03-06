@@ -105,9 +105,6 @@ while read line; do
         [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
  	ciop-log "INFO" "Sensing date: ${sensing_date}"        
 
-	# writing original image url for node master_select (need for newly master)
-	echo $scene_ref > ${sensing_date}.url	
-
 	ciop-log "INFO" "Get Sensor"
         mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
         [ $? -ne 0 ] && return ${ERR_MISSION}
@@ -131,6 +128,9 @@ while read line; do
         ${slc_bin}
         [ $? -ne 0 ] && return ${ERR_SLC}
 
+	# writing original image url for node master_select (need for newly master)
+	echo $scene_ref > ${sensing_date}.url	
+
         # publish for next node
         cd ${SLC}
         ciop-log "INFO" "create tar"
@@ -151,6 +151,7 @@ while read line; do
 	
 	fi
 	ciop-log "INFO" "Sensing date before if: $sensing_date"
+	
 	if [ $sensing_date != $premaster_date ];then
 		
 		cd ${PROCESS}/INSAR_${premaster_date}
