@@ -74,6 +74,7 @@ main() {
 local res
 
 first=TRUE
+premaster_date=""
 # download data into $RAW
 while read line; do
 
@@ -140,38 +141,24 @@ while read line; do
         slc_folders="$( ciop-publish -a ${SLC}/${sensing_date}.tgz )"
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
 
-	echo "${premaster_slc_ref},${slc_folders}" | ciop-publish -s
+	if [ ! -d ${PROCESS}/INSAR_$premaster_date/ ]; then
+		ciop-copy -O ${PROCESS} ${premaster_slc_ref}
+		[ $? -ne 0 ] && return ${ERR_MASTER}
 
-	rm -rf $RAW
-	cd -
-done
-
-# import master from node_premaster_prep
-ciop-copy -O ${PROCESS} ${premaster_slc_ref}
-[ $? -ne 0 ] && return ${ERR_MASTER}
-
-premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
-[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
-ciop-log "INFO" "Pre-Master Date: $premaster_date"
-
-# loop in all slave folders in $PROCESS/INSAR_$MASTER_DATE to do step_orbit and step_coarse
-while read line; do
-
-	ciop-log "INFO" "Line: ${line} "
-	IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
-
-	ciop-log "INFO" "Scene ref: ${scene_ref} " ###
-	slave_date=`basename $scene_ref | cut -c 15-22`
-	ciop-log "INFO" "Slave date: ${slave_date} "
+		premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
+		[ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
+		ciop-log "INFO" "Pre-Master Date: $premaster_date"
 	
-	if [ $slave_date != $master_date ];then
-	
+	fi
+	ciop-log "INFO" "Sensing date before if: $sensing_date"
+	if [ $sensing_date != $premaster_date ];then
+		
 		cd ${PROCESS}/INSAR_${premaster_date}
-		mkdir ${slave_date}
-		cd ${slave_date}
+		mkdir ${sensing_date}
+		cd ${sensing_date}
 
 		# step_orbit (extract orbits)
-		ln -s ${SLC}/${slave_date} SLC
+		ln -s ${SLC}/${sensing_date} SLC
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
 		#step_orbit
 		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
@@ -182,14 +169,12 @@ while read line; do
 
 		cd ../
         	ciop-log "INFO" "create tar"
-        	tar cvfz INSAR_${slave_date}.tgz ${slave_date}
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
         	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
-
-		ciop-log "INFO" "Publishing"
-        	insar_slaves="$( ciop-publish ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
-        	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-	fi
-done 
+	
+	fi 
+	echo "$premaster_slc_ref,$slc_folders,$insar_slaves" | ciop-publish -s
+done
 
 }
 cat | main
