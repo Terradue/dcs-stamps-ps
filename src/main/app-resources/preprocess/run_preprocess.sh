@@ -126,7 +126,7 @@ while read line; do
         # focalize SLC
         scene_folder=${SLC}/${sensing_date}
         cd ${scene_folder}
-        #slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+        slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
         ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
         ${slc_bin}
         [ $? -ne 0 ] && return ${ERR_SLC}
@@ -160,11 +160,11 @@ while read line; do
 		# step_orbit (extract orbits)
 		ln -s ${SLC}/${sensing_date} SLC
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
-		#step_orbit
+		step_orbit
 		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
 	
 		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
-		#step_coarse
+		step_coarse
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
 		cd ../
@@ -174,6 +174,9 @@ while read line; do
 	
 	fi 
 	echo "$premaster_slc_ref,$slc_folders,$insar_slaves" | ciop-publish -s
+
+	rm -rf $RAW
+	cd -
 done
 
 }
