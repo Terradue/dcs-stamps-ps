@@ -137,7 +137,7 @@ while read line; do
         tar cvfz ${sensing_date}.tgz ${sensing_date}
         [ $? -ne 0 ] && return ${ERR_SLC_TAR}
 
-        ciop-log "INFO" "Publishing"
+        ciop-log "INFO" "Publishing -a"
         slc_folders="$( ciop-publish -a ${SLC}/${sensing_date}.tgz )"
         [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
 
@@ -173,11 +173,13 @@ while read line; do
         	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
         	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
+		ciop-log "INFO" "Publish -a insar_slaves"
 		insar_slaves="$( ciop-publish -a ${SLC}/${sensing_date}.tgz )"
 	
 	else
 		insar_slaves=""
 	fi 
+	ciop-log "INFO" "Publish -s"
 	echo "$premaster_slc_ref,$slc_folders,$insar_slaves" | ciop-publish -s
 
 	rm -rf $RAW

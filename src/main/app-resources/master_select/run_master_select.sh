@@ -171,8 +171,6 @@ while read line; do
 
 done
 
-chmod -R 777 $TMPDIR
-
 }
 cat | main
 exit ${SUCCESS}
