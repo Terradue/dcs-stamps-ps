@@ -172,7 +172,11 @@ while read line; do
         	ciop-log "INFO" "create tar"
         	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
         	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
+		insar_slaves="$( ciop-publish -a ${SLC}/${sensing_date}.tgz )"
 	
+	else
+		insar_slaves=""
 	fi 
 	echo "$premaster_slc_ref,$slc_folders,$insar_slaves" | ciop-publish -s
 

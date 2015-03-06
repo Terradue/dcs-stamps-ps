@@ -93,7 +93,8 @@ while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
         IFS=',' read -r premaster_slc_ref slc_folders insar_slaves <<< "$line"
-
+	ciop-log "DEBUG" "1:$premaster_slc_ref 2:$scene_ref 3:$insar_slaves"
+	
 	if [ ! -d ${PROCESS}/INSAR_$premaster_date/ ]; then
 		
 		ciop-copy -O ${PROCESS} ${premaster_slc_ref}
