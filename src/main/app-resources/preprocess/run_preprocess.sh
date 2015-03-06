@@ -161,6 +161,7 @@ while read line; do
 
 	IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
 
+	ciop-log "INFO" "Scene ref: ${scene_ref} " ###
 	slave_date=`basename $scene_ref | cut -c 15-22`
 	ciop-log "INFO" "Slave date: ${slave_date} "
 	
