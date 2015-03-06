@@ -107,15 +107,14 @@ while read line; do
 	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/ $( echo ${insar_slaves} | tr -d "\t")  
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
-	ciop-log "INFO" "Unpack folder: ${insar_slaves}"
-	slave_date=`basename $line` 
-	
 done
 
 cd $PROCESS/INSAR_${premaster_date}
 master_select > master.date
 [ $? -ne 0 ] && return ${ERR_MASTER_SELECT}
 master_date=`awk 'NR == 12' master.date | awk $'{print $1}'`
+ciop-log "INFO" "Choose SLC from $master_date as final master"
+
 
 while read line; do
 
@@ -145,23 +144,24 @@ while read line; do
 		tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
 		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-		ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-		insar_master="$( ciop-publish INSAR_${master_date}.tgz -a )"
-		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-
 		# getting the original file url for dem fucntion
 		master_ref=`more $master_date.url`
-					
-		ciop-log "INFO" "Create DEM"
-		dem ${master_ref} ${TMPDIR}/DEM
-		[ $? -ne 0 ] && return ${ERR_DEM}
+		ciop-log "INFO" "Create DEM"		
+		
+		#ciop-log "INFO" "Create DEM"
+		#dem ${master_ref} ${TMPDIR}/DEM
+		#[ $? -ne 0 ] && return ${ERR_DEM}
 	
-		head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
-		cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
-		tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
+		#head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
+		#cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
+		#tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
 
-		step_master_timing
-		[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
+		#step_master_timing
+		#[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
+
+		#ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
+		#insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
+		#[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 	fi	
 	
 	ciop-log "INFO" "Will publish the final output"
