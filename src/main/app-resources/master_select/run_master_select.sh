@@ -142,15 +142,15 @@ step_master_setup
 # getting the original file url for dem fucntion
 master_ref=`more $master_date.url`
 ciop-log "INFO" "Prepare DEM"		
-#dem ${master_ref} ${TMPDIR}/DEM
-#[ $? -ne 0 ] && return ${ERR_DEM}
+dem ${master_ref} ${TMPDIR}/DEM
+[ $? -ne 0 ] && return ${ERR_DEM}
 	
-#head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
-#cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
-#tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
+head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
+cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
+tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
 
-#step_master_timing
-#[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
+step_master_timing
+[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
 
 ciop-log "INFO" "Archiving the newly created INSAR_$master_date folder"
 cd ${PROCESS}
@@ -161,18 +161,18 @@ ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
 insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
 [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
-#cd ${TMPDIR}
-#tar cvfz DEM.tgz DEM
-#[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+cd ${TMPDIR}
+tar cvfz DEM.tgz DEM
+[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-#ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-#dem="$( ciop-publish DEM.tgz )"
-#[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
+dem="$( ciop-publish DEM.tgz )"
+[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 	
-for slc_folder in ${TMPDIR}/slc_folders.tmp;do
+for slc_folder in ${TMPDIR}/slc_folders.tmp; do
 	ciop-log "INFO" "Will publish the final output"
-#	echo "${insar_master},${slc_folders},${dem}" | ciop-publish -s	
-	echo "${insar_master},${slc_folder}" | ciop-publish -s	
+	echo "${insar_master},${slc_folders},${dem}" | ciop-publish -s	
+#	echo "${insar_master},${slc_folder}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 done
 
