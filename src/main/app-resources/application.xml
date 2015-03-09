@@ -65,8 +65,8 @@
           </sources>
           <parameters/>
       </node>
-      <node id="node_ifgs">
-        <job id="ifgs" />
+      <node id="node_ifg_gener">
+        <job id="ifg_gener" />
           <sources>
           <source refid="wf:node">node_master_select</source>
           </sources>
