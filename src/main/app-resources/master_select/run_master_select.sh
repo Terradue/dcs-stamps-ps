@@ -13,6 +13,9 @@ source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 # source sar helpers and functions
 set_env
 
+DEM_ROUTINES="/application/master_select/bin"
+PATH=$DEM_ROUTINES:$PATH
+
 #--------------------------------
 #       2) Error Handling       
 #--------------------------------
