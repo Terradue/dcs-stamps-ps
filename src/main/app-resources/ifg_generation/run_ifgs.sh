@@ -64,7 +64,8 @@ while read line; do
 
 	ciop-copy -O ${SLC} ${slc_folders}
 	[ $? -ne 0 ] && return ${ERR_SLC_RETRIEVE}
-
+	
+	sensing_date=`basename ${slc_folders} | cut -c 1-8`
 
 	if [ $sensing_date != $premaster_date ];then
 		
@@ -74,6 +75,8 @@ while read line; do
 
 		# step_orbit (extract orbits)
 		ln -s ${SLC}/${sensing_date} SLC
+		sed -i 's/Data_output_file:.*/Data_output_file:  '"${SLC}"'/'"${sensing_date}"'.slc' slave.res
+		sed -i 's/Data_output_file:.*/"Data_output_file:  '"${PROCESS}"'/INSAR_'"${master_date}"'/'"${master_date}"'_crop.slc' slave.res
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
 		step_orbit
 		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
@@ -82,7 +85,7 @@ while read line; do
 		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
 		
 		cp $DORIS_SCR/coarse.dorisin
-		sed 
+		sed -i 's/CC_NWIN.*/"CC_NWIN         100"/' coarse.dorisin  # perhaps 200
 		doris coarse.dorisin > step_coarse.log
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
@@ -100,19 +103,19 @@ while read line; do
 		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
 
 		ciop-log "INFO" "doing image fine correlation for ${sensing_date}"
-		step_coreg
+		#step_coreg
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
 		ciop-log "INFO" "doing image simamp for ${sensing_date}"
-		step_dem
+		#step_dem
 		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
 
 		ciop-log "INFO" "doing resample for ${sensing_date}"
-		step_resample
+		#step_resample
 		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
 
 		ciop-log "INFO" "doing ifg generation for ${sensing_date}"
-		step_ifg
+		#step_ifg
 		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
 
 		cd ../
@@ -127,6 +130,7 @@ while read line; do
 		insar_slaves=""
 	fi 
 
-	
-	# substitute file in master.res & slave.res 
+}
+cat | main
+exit ${SUCCESS}
 

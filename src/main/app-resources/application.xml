@@ -32,6 +32,15 @@
         <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
+    <jobTemplate id="ifg_gener">
+      <streamingExecutable>/application/master_select/run_master_select.sh</streamingExecutable>
+	<defaultParameters>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	</defaultParameters>
+        <defaultJobconf>
+        <property id="mapred.task.timeout">9900000000</property>
+        </defaultJobconf>
+    </jobTemplate>
   </jobTemplates>
   <workflow id="dcs-stamps-ps" title="StaMPS" abstract="StaMPS">
     <workflowVersion>1.0</workflowVersion>
@@ -53,6 +62,13 @@
         <job id="master_select" />
           <sources>
           <source refid="wf:node">node_preprocess</source>
+          </sources>
+          <parameters/>
+      </node>
+      <node id="node_ifg_gener">
+        <job id="ifg_gener" />
+          <sources>
+          <source refid="wf:node">node_master_select</source>
           </sources>
           <parameters/>
       </node>
