@@ -108,9 +108,6 @@ while read line; do
 	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/${insar_slave}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
-	ciop-log "INFO" "Retrieve folder: ${slc_folder}"
-	ciop-copy -f -O ${SLC}/${slc_folder}
-	[ $? -ne 0 ] && return ${ERR_SLC_FOLDER}	
 done
 
 cd $PROCESS/INSAR_${premaster_date}
@@ -120,10 +117,17 @@ cd $PROCESS/INSAR_${premaster_date}
 master_date=20100415
 ciop-log "INFO" "Choose SLC from $master_date as final master"
 
-for line in `ls -1 ${slc_folders}`; do
+while read line; do
 
-	if [[ "`basename $line`" == "{$master_date}" ]]; then
+	ciop-log "INFO" "Read input from StdIn"
+	IFS=',' read -r premaster_slc_ref slc_folders insar_slaves <<< "$line"
 	
+	if [[ "`echo ${slc_folders} | basename $line`" == "{$master_date}.tgz" ]]; then
+	
+		ciop-log "INFO" "Retrieving final master SLC"
+		ciop-copy -f -O ${SLC} $( echo ${slc_folders} | tr -d "\t")  
+		[ $? -ne 0 ] && return ${ERR_MASTER_COPY}
+
 		cd ${SLC}/${master_date}
 		MAS_WIDTH=`grep WIDTH  ${master_date}.slc.rsc | awk '{print $2}' `
 		MAS_LENGTH=`grep FILE_LENGTH  ${master_date}.slc.rsc | awk '{print $2}' `
