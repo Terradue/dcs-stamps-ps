@@ -146,7 +146,7 @@ step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 	
 # getting the original file url for dem fucntion
-master_ref=`more $master_date.url`
+master_ref=`cat $master_date.url`
 ciop-log "INFO" "Prepare DEM with: $master_ref"		
 echo "-------------------"
 echo $master_ref
