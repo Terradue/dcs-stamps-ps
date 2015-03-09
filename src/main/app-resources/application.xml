@@ -33,7 +33,7 @@
         </defaultJobconf>
     </jobTemplate>
     <jobTemplate id="ifg_gener">
-      <streamingExecutable>/application/ifg_generation/run_ifg_gener.sh</streamingExecutable>
+      <streamingExecutable>/application/ifg_generation/run_ifgs.sh</streamingExecutable>
 	<defaultParameters>
 	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
 	</defaultParameters>
@@ -65,8 +65,8 @@
           </sources>
           <parameters/>
       </node>
-      <node id="node_ifg_gener">
-        <job id="ifg_gener" />
+      <node id="node_ifgs">
+        <job id="ifgs" />
           <sources>
           <source refid="wf:node">node_master_select</source>
           </sources>
