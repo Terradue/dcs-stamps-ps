@@ -62,12 +62,6 @@ while read line; do
 		
 		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
 		ciop-log "INFO" "Final Master Date: $master_date"
-
-		cd ${PROCESS}	
-		tar xvfz INSAR_${master_date}.tgz 
-		[ $? -ne 0 ] && return ${ERR_UNTAR_MASTER}
-
-		cd INSAR_${master_date}
 		
 	fi
 

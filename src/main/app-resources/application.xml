@@ -33,7 +33,7 @@
         </defaultJobconf>
     </jobTemplate>
     <jobTemplate id="ifg_gener">
-      <streamingExecutable>/application/master_select/run_master_select.sh</streamingExecutable>
+      <streamingExecutable>/application/ifg_generation/run_ifg_gener.sh</streamingExecutable>
 	<defaultParameters>
 	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
 	</defaultParameters>
