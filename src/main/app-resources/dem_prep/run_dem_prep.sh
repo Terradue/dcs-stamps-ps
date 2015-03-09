@@ -39,36 +39,6 @@ esac
 }
 trap cleanExit EXIT
 
-
-dem() {
-  local dataset_ref=$1
-  local target=$2
-  local bbox
-  local wkt
- 
-  wkt="$( ciop-casmeta -f "dct:spatial" "${dataset_ref}" )"
-  [ -n "${wkt}" ] && bbox="$( mbr.py "${wkt}" )" || return 1
-
-  wdir=${PWD}/.wdir
-  mkdir ${wdir}
-  mkdir -p ${target}
-
-  target=$( cd ${target} && pwd )
-
-  cd ${wdir}
-  construct_dem.sh dem ${bbox} SRTM3 || return 1
-  
-
-  cp -v ${wdir}/dem/final_dem.dem ${target}
-  cp -v ${wdir}/dem/input.doris_dem ${target}
-
-  sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
-  cd - &> /dev/null
-
-  rm -fr ${wdir}
-  return 0
-}
-
 main() {
 local res
 

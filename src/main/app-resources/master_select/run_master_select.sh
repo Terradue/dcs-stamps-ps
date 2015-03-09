@@ -117,7 +117,6 @@ cd $PROCESS/INSAR_${premaster_date}
 master_date=20100415
 ciop-log "INFO" "Choose SLC from $master_date as final master"
 
-
 while read line; do
 
 	ciop-log "INFO" "Read input from StdIn"
@@ -141,16 +140,9 @@ while read line; do
 		step_master_setup
 		[ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 	
-		ciop-log "INFO" "Archiving the newly created INSAR_$master_date folder"
-		cd ${PROCESS}
-		tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
-		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
-
 		# getting the original file url for dem fucntion
 		master_ref=`more $master_date.url`
-		ciop-log "INFO" "Create DEM"		
-		
-		#ciop-log "INFO" "Create DEM"
+		ciop-log "INFO" "Prepare DEM"		
 		#dem ${master_ref} ${TMPDIR}/DEM
 		#[ $? -ne 0 ] && return ${ERR_DEM}
 	
@@ -161,13 +153,28 @@ while read line; do
 		#step_master_timing
 		#[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
 
+		ciop-log "INFO" "Archiving the newly created INSAR_$master_date folder"
+		cd ${PROCESS}
+		tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
+		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
+		ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
+		insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
+		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+
+		#cd ${TMPDIR}
+		#tar cvfz DEM.tgz DEM
+		#[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
 		#ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-		#insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
+		#dem="$( ciop-publish DEM.tgz )"
 		#[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+		
 	fi	
 	
 	ciop-log "INFO" "Will publish the final output"
-	echo "$insar_master,$slc_folders" | ciop-publish -s	
+#	echo "${insar_master},${slc_folders},${dem}" | ciop-publish -s	
+	echo "${insar_master},${slc_folders}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
 done
