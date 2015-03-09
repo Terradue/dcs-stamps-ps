@@ -169,7 +169,7 @@ insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
 #dem="$( ciop-publish DEM.tgz )"
 #[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 	
-for slc_folder in ${TMPDIR}/slc_folders.tmp 	
+for slc_folder in ${TMPDIR}/slc_folders.tmp;do
 	ciop-log "INFO" "Will publish the final output"
 #	echo "${insar_master},${slc_folders},${dem}" | ciop-publish -s	
 	echo "${insar_master},${slc_folder}" | ciop-publish -s	
