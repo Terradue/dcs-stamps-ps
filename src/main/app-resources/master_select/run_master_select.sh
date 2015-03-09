@@ -108,71 +108,72 @@ while read line; do
 	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/${insar_slave}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
-	ciop-log "INFO" "Retrieve folder: ${slc_folder}"
-	ciop-copy -f -O ${SLC}/${slc_folder}
-	[ $? -ne 0 ] && return ${ERR_SLC_FOLDER}	
+	#ciop-log "INFO" "Retrieve folder: ${slc_folder}"
+	#ciop-copy -f -O ${SLC}/${slc_folder}
+	#[ $? -ne 0 ] && return ${ERR_SLC_FOLDER}
+
+	echo ${slc_folders} >> ${TMPDIR}/slc_folders.tmp	
 done
 
 cd $PROCESS/INSAR_${premaster_date}
+
 #master_select > master.date
 #[ $? -ne 0 ] && return ${ERR_MASTER_SELECT}
 #master_date=`awk 'NR == 12' master.date | awk $'{print $1}'`
 master_date=20100415
 ciop-log "INFO" "Choose SLC from $master_date as final master"
 
-for line in `ls -1 ${slc_folders}`; do
+master=`grep ${master_date} ${TMPDIR}/slc_folders.tmp`
 
-	if [[ "`basename $line`" == "{$master_date}" ]]; then
+ciop-copy -f -O ${SLC}/ ${master}
 	
-		cd ${SLC}/${master_date}
-		MAS_WIDTH=`grep WIDTH  ${master_date}.slc.rsc | awk '{print $2}' `
-		MAS_LENGTH=`grep FILE_LENGTH  ${master_date}.slc.rsc | awk '{print $2}' `
+cd ${SLC}/${master_date}
+MAS_WIDTH=`grep WIDTH  ${master_date}.slc.rsc | awk '{print $2}' `
+MAS_LENGTH=`grep FILE_LENGTH  ${master_date}.slc.rsc | awk '{print $2}' `
 
-		ciop-log "INFO" "Running step_master_setup"
-		echo "first_l 1" > master_crop.in
-		echo "last_l $MAS_LENGTH" >> master_crop.in
-		echo "first_p 1" >> master_crop.in
-		echo "last_p $MAS_WIDTH" >> master_crop.in
-		step_master_setup
-		[ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
+ciop-log "INFO" "Running step_master_setup"
+echo "first_l 1" > master_crop.in
+echo "last_l $MAS_LENGTH" >> master_crop.in
+echo "first_p 1" >> master_crop.in
+echo "last_p $MAS_WIDTH" >> master_crop.in
+step_master_setup
+[ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 	
-		# getting the original file url for dem fucntion
-		master_ref=`more $master_date.url`
-		ciop-log "INFO" "Prepare DEM"		
-		#dem ${master_ref} ${TMPDIR}/DEM
-		#[ $? -ne 0 ] && return ${ERR_DEM}
+# getting the original file url for dem fucntion
+master_ref=`more $master_date.url`
+ciop-log "INFO" "Prepare DEM"		
+#dem ${master_ref} ${TMPDIR}/DEM
+#[ $? -ne 0 ] && return ${ERR_DEM}
 	
-		#head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
-		#cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
-		#tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
+#head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
+#cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
+#tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
 
-		#step_master_timing
-		#[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
+#step_master_timing
+#[ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
 
-		ciop-log "INFO" "Archiving the newly created INSAR_$master_date folder"
-		cd ${PROCESS}
-		tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
-		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+ciop-log "INFO" "Archiving the newly created INSAR_$master_date folder"
+cd ${PROCESS}
+tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
+[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-		ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-		insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
-		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
+insar_master="$( ciop-publish INSAR_${master_date}.tgz )"
+[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
-		#cd ${TMPDIR}
-		#tar cvfz DEM.tgz DEM
-		#[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+#cd ${TMPDIR}
+#tar cvfz DEM.tgz DEM
+#[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-		#ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-		#dem="$( ciop-publish DEM.tgz )"
-		#[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-		
-	fi	
+#ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
+#dem="$( ciop-publish DEM.tgz )"
+#[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 	
+for slc_folder in ${TMPDIR}/slc_folders.tmp 	
 	ciop-log "INFO" "Will publish the final output"
 #	echo "${insar_master},${slc_folders},${dem}" | ciop-publish -s	
-	echo "${insar_master},${slc_folders}" | ciop-publish -s	
+	echo "${insar_master},${slc_folder}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
-
 done
 
 }
