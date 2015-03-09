@@ -134,8 +134,8 @@ ciop-log "INFO" "Retrieve final master SLC from ${master_date}"
 ciop-copy -f -O ${SLC}/ ${master}
 	
 cd ${SLC}/${master_date}
-MAS_WIDTH=`grep WIDTH  ${master_date}.slc.rsc | awk '{print $2}' `
-MAS_LENGTH=`grep FILE_LENGTH  ${master_date}.slc.rsc | awk '{print $2}' `
+MAS_WIDTH=`grep WIDTH ${master_date}.slc.rsc | awk '{print $2}' `
+MAS_LENGTH=`grep FILE_LENGTH ${master_date}.slc.rsc | awk '{print $2}' `
 
 ciop-log "INFO" "Running step_master_setup"
 echo "first_l 1" > master_crop.in
@@ -144,14 +144,36 @@ echo "first_p 1" >> master_crop.in
 echo "last_p $MAS_WIDTH" >> master_crop.in
 step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
+
+# DEM steps
 	
 # getting the original file url for dem fucntion
 #master_ref=`cat $master_date.url`
 #ciop-log "INFO" "Prepare DEM with: $master_ref"		
-master_ref="https://eo-virtual-archive4.esa.int/supersites/ASA_IM__0CNPAM20100415_081840_000000162088_00336_42474_4966.N1"
-echo $master_ref
-dem ${master_ref} ${TMPDIR}/DEM
-[ $? -ne 0 ] && return ${ERR_DEM}
+#dem ${master_ref} ${TMPDIR}/DEM
+#[ $? -ne 0 ] && return ${ERR_DEM}
+
+#---------workaround due to casmeta problem---------------#
+
+  $target = ${TMPDIR}/DEM
+  wdir=${PWD}/.wdir
+  mkdir ${wdir}
+  mkdir -p ${target}
+
+  target=$( cd ${target} && pwd )
+
+  cd ${wdir}
+  construct_dem.sh dem 28.4 30.3 40.2 41.7 SRTM3 || return 1
+  
+  cp -v ${wdir}/dem/final_dem.dem ${target}
+  cp -v ${wdir}/dem/input.doris_dem ${target}
+
+  sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
+  cd - &> /dev/null
+
+  rm -fr ${wdir}
+#---------workaround due to casmeta problem---------------#
+
 	
 head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
 cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
