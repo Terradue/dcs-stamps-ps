@@ -113,7 +113,7 @@ while read line; do
 	fi
 
 	ciop-log "INFO" "Retrieve folder: ${insar_slaves}"
-	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/${insar_slave}
+	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/${insar_slaves}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
 	echo ${slc_folders} >> ${TMPDIR}/slc_folders.tmp	
@@ -129,7 +129,7 @@ ciop-log "INFO" "Choose SLC from $master_date as final master"
 
 master=`grep ${master_date} ${TMPDIR}/slc_folders.tmp`
 
-ciop-log "INFO" "Retriev final master SLC"
+ciop-log "INFO" "Retrieve final master SLC from ${master_date}"
 ciop-copy -f -O ${SLC}/ ${master}
 	
 cd ${SLC}/${master_date}
@@ -146,7 +146,9 @@ step_master_setup
 	
 # getting the original file url for dem fucntion
 master_ref=`more $master_date.url`
-ciop-log "INFO" "Prepare DEM with ${master_ref}"		
+ciop-log "INFO" "Prepare DEM with: $master_ref"		
+echo "-------------------"
+echo $master_ref
 dem ${master_ref} ${TMPDIR}/DEM
 [ $? -ne 0 ] && return ${ERR_DEM}
 	
