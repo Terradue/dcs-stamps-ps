@@ -13,7 +13,7 @@ source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 # source sar helpers and functions
 set_env
 
-DEM_ROUTINES="/application/master_select/bin"
+DEM_ROUTINES="${_CIOP_APPLICATION_PATH}/master_select/bin"
 PATH=$DEM_ROUTINES:$PATH
 
 #--------------------------------
@@ -28,6 +28,8 @@ ERR_MASTER_SELECT=9
 ERR_MASTER_COPY=11
 ERR_MASTER_SLC=12
 ERR_MASTER_SETUP=13
+ERR_DEM=14
+ERR_MASTER_TIMING=21
 ERR_INSAR_TAR=15
 ERR_INSAR_PUBLISH=17
 ERR_FINAL_PUBLISH=19
@@ -46,6 +48,8 @@ ${ERR_MASTER_SELECT}) msg="couldn't calculate most suited master image";;
 ${ERR_MASTER_COPY}) msg="couldn't retrieve final master";;
 ${ERR_MASTER_SLC_TAR}) msg="couldn't untar final master SLC";;
 ${ERR_MASTER_SETUP}) msg="couldn't setup new INSAR_MASTER folder";;
+${ERR_DEM}) msg="could not create DEM"
+${ERR_MASTER_TIMING}) msg="couldn't run step_master_timing";;
 ${ERR_INSAR_TAR}) msg="couldn't create tgz archive for publishing";;
 ${ERR_INSAR_PUBLISH}) msg="couldn't publish new INSAR_MASTER folder";;
 ${ERR_FINAL_PUBLISH}) msg="couldn't publish final output";;
@@ -142,7 +146,7 @@ step_master_setup
 	
 # getting the original file url for dem fucntion
 master_ref=`more $master_date.url`
-ciop-log "INFO" "Prepare DEM"		
+ciop-log "INFO" "Prepare DEM with ${master_ref}"		
 dem ${master_ref} ${TMPDIR}/DEM
 [ $? -ne 0 ] && return ${ERR_DEM}
 	
@@ -150,7 +154,7 @@ head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/t
 cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
 tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
 
-ciop-log "INFO" "Prepare DEM"		
+ciop-log "INFO" "Running step_master_timing"		
 step_master_timing
 [ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
 
