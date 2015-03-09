@@ -132,7 +132,7 @@ while read line; do
 	else
 		insar_slaves=""
 	fi 
-
+done
 }
 cat | main
 exit ${SUCCESS}
