@@ -155,7 +155,7 @@ step_master_setup
 
 #---------workaround due to casmeta problem---------------#
 
-  target = ${TMPDIR}/DEM
+  target=${TMPDIR}/DEM
   wdir=${PWD}/.wdir
   mkdir ${wdir}
   mkdir -p ${target}
