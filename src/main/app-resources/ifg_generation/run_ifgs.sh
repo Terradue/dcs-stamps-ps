@@ -1,5 +1,6 @@
 #! /bin/bash
 mode=$1
+set -x 
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
@@ -19,7 +20,10 @@ set_env
 
 # define the exit codes
 SUCCESS=0
-ERR_PREMASTER=5
+ERR_MASTER_RETRIEVE=7
+ERR_UNTAR_MASTER=9
+ERR_SLC_RETRIEVE=11
+
 
 # add a trap to exit gracefully
 cleanExit() {
@@ -28,8 +32,13 @@ local msg
 msg=""
 case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
-${ERR_PREMASTER}) msg="couldn't retrieve ";; 
-
+${ERR_MASTER_RETRIEVE}) msg="";;
+${ERR_UNTAR_MASTER}) msg="";;
+${ERR_SLC_RETRIEVE}) msg="";;
+${ERR_STEP_ORBIT}) msg="";;
+${ERR_MASTER_RETRIEVE}) msg="";;
+${ERR_MASTER_RETRIEVE}) msg="";;
+${ERR_MASTER_RETRIEVE}) msg="";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
@@ -45,7 +54,7 @@ local res
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
-        IFS=',' read -r insar_master slc_folders <<< "$line"
+        IFS=',' read -r insar_master slc_folders dem <<< "$line"
 
 	if [ ! -d ${PROCESS}/INSAR_$master_date/ ]; then
 		ciop-copy -O ${PROCESS} ${insar_master}
@@ -56,7 +65,7 @@ while read line; do
 
 		cd ${PROCESS}	
 		tar xvfz INSAR_${master_date}.tgz 
-		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+		[ $? -ne 0 ] && return ${ERR_UNTAR_MASTER}
 
 		cd INSAR_${master_date}
 		
