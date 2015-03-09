@@ -114,7 +114,7 @@ while read line; do
 	fi
 
 	ciop-log "INFO" "Retrieve folder: ${insar_slaves}"
-	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/${insar_slaves}
+	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/ ${insar_slaves}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
 	echo ${slc_folders} >> ${TMPDIR}/slc_folders.tmp	
