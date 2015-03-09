@@ -146,9 +146,9 @@ step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 	
 # getting the original file url for dem fucntion
-master_ref=`cat $master_date.url`
-ciop-log "INFO" "Prepare DEM with: $master_ref"		
-echo "-------------------"
+#master_ref=`cat $master_date.url`
+#ciop-log "INFO" "Prepare DEM with: $master_ref"		
+master_ref="https://eo-virtual-archive4.esa.int/supersites/ASA_IM__0CNPAM20100415_081840_000000162088_00336_42474_4966.N1"
 echo $master_ref
 dem ${master_ref} ${TMPDIR}/DEM
 [ $? -ne 0 ] && return ${ERR_DEM}
