@@ -155,12 +155,12 @@ step_master_setup
 
 #---------workaround due to casmeta problem---------------#
 
-  $target = ${TMPDIR}/DEM
+  target = ${TMPDIR}/DEM
   wdir=${PWD}/.wdir
   mkdir ${wdir}
   mkdir -p ${target}
 
-  target=$( cd ${target} && pwd )
+  #target=$( cd ${target} && pwd )
 
   cd ${wdir}
   construct_dem.sh dem 28.4 30.3 40.2 41.7 SRTM3 || return 1
@@ -179,6 +179,7 @@ head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/t
 cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
 tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
 
+cd ${TMPDIR}/INSAR_${master_date}/
 ciop-log "INFO" "Running step_master_timing"		
 step_master_timing
 [ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
