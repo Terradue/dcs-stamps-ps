@@ -88,6 +88,7 @@ main() {
 local res
 
 premaster_date=""
+
 # copy INSAR_PREMASTER from input
 while read line; do
 
@@ -108,10 +109,6 @@ while read line; do
 	ciop-copy -f -O ${PROCESS}/INSAR_$premaster_date/${insar_slave}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES}	
 	
-	#ciop-log "INFO" "Retrieve folder: ${slc_folder}"
-	#ciop-copy -f -O ${SLC}/${slc_folder}
-	#[ $? -ne 0 ] && return ${ERR_SLC_FOLDER}
-
 	echo ${slc_folders} >> ${TMPDIR}/slc_folders.tmp	
 done
 
@@ -125,6 +122,7 @@ ciop-log "INFO" "Choose SLC from $master_date as final master"
 
 master=`grep ${master_date} ${TMPDIR}/slc_folders.tmp`
 
+ciop-log "INFO" "Retriev final master SLC"
 ciop-copy -f -O ${SLC}/ ${master}
 	
 cd ${SLC}/${master_date}
@@ -149,6 +147,7 @@ head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/t
 cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
 tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
 
+ciop-log "INFO" "Prepare DEM"		
 step_master_timing
 [ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
 
