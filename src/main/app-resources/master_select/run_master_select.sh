@@ -1,6 +1,6 @@
 #! /bin/bash
 mode=$1
-set -x
+#set -x
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
@@ -146,12 +146,6 @@ step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 
 # DEM steps
-	
-# getting the original file url for dem fucntion
-#master_ref=`cat $master_date.url`
-#ciop-log "INFO" "Prepare DEM with: $master_ref"		
-#dem ${master_ref} ${TMPDIR}/DEM
-#[ $? -ne 0 ] && return ${ERR_DEM}
 
 #---------workaround due to casmeta problem---------------#
 
@@ -163,6 +157,7 @@ step_master_setup
   #target=$( cd ${target} && pwd )
 
   cd ${wdir}
+  # Istanbul track 336
   construct_dem.sh dem 28.4 30.3 40.2 41.7 SRTM3 || return 1
   
   cp -v ${wdir}/dem/final_dem.dem ${target}
@@ -174,12 +169,19 @@ step_master_setup
   rm -fr ${wdir}
 #---------workaround due to casmeta problem---------------#
 
+# ------------actual code-------------------#	
+# getting the original file url for dem fucntion
+#master_ref=`cat $master_date.url`
+#ciop-log "INFO" "Prepare DEM with: $master_ref"		
+#dem ${master_ref} ${TMPDIR}/DEM
+#[ $? -ne 0 ] && return ${ERR_DEM}
+# ------------actual code-------------------#
 	
-head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${TMPDIR}/INSAR_${master_date}/timing.dorisin
-cat ${TMPDIR}/DEM/input.doris_dem >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin  
-tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${TMPDIR}/INSAR_${master_date}/timing.dorisin	
+head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${PROCESS}/INSAR_${master_date}/timing.dorisin
+cat ${TMPDIR}/DEM/input.doris_dem >> ${PROCESS}/INSAR_${master_date}/timing.dorisin  
+tail -n 13 ${STAMPS}/DORIS_SCR/timing.dorisin >> ${PROCESS}/INSAR_${master_date}/timing.dorisin	
 
-cd ${TMPDIR}/INSAR_${master_date}/
+cd ${PROCESS}/INSAR_${master_date}/
 ciop-log "INFO" "Running step_master_timing"		
 step_master_timing
 [ $? -ne 0 ] && return ${ERR_MASTER_TIMING}
