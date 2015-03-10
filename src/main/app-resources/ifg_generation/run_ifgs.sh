@@ -78,8 +78,8 @@ while read line; do
 		
 		cd ${PROCESS}/INSAR_${master_date}
 		cp master.res master.res2 # for debugging
-		sed -i 's/Data_output_file:.*/Data_output_file:  '${PROCESS}'\/INSAR_'${master_date}'\/'${master_date}'_crop.slc/' master.res
-		sed -i 's/DEM source file:.*/DEM source file:  '${TMPDIR}'\DEM\/final_dem.dem/' master.res     
+		sed -i 's/Data_output_file:.*/Data_output_file:  '$PROCESS'\/INSAR_'$master_date'\/'$master_date'_crop.slc/' master.res
+		sed -i 's/DEM source file:.*/DEM source file:  '$TMPDIR'\DEM\/final_dem.dem/' master.res     
 
 		mkdir ${sensing_date}
 		cd ${sensing_date}
@@ -92,7 +92,7 @@ while read line; do
 		cp slave.res slave.res2 # for debugging
 		cp $DORIS_SCR/orbit_Envisat.dorisin .
 		
-		sed -i 's/Data_output_file:.*/Data_output_file:  '${SLC}'\/'${sensing_date}'.slc/' slave.res
+		sed -i 's/Data_output_file:.*/Data_output_file:  '$SLC'\/'$sensing_date'.slc/' slave.res
 		                 	
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
 		#doris orbit_Envisat.dorisin
