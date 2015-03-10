@@ -196,7 +196,7 @@ tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
 [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-insar_master=$( ciop-publish -a INSAR_${master_date}.tgz )
+insar_master=$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )
 [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
 cd ${TMPDIR}
@@ -205,7 +205,7 @@ tar cvfz DEM.tgz DEM
 [ $? -ne 0 ] && return ${ERR_DEM_TAR}
 
 ciop-log "INFO" "Publishing the DEM folder"
-dem=$( ciop-publish -a DEM.tgz )
+dem=$( ciop-publish -a ${TMPDIR}/DEM.tgz )
 [ $? -ne 0 ] && return ${ERR_DEM_PUBLISH}
 	
 for slcs in ${TMPDIR}/slc_folders.tmp; do
