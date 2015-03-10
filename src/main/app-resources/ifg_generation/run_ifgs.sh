@@ -50,12 +50,13 @@ trap cleanExit EXIT
 
 main() {
 local res
+master_date=""
 
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
         IFS=',' read -r insar_master slcs dem <<< "$line"
-	ciop-log "DEBUG" "1:$insar_master 2:$slcs 3:$dem"
+	ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
 
 	if [ ! -d ${PROCESS}/INSAR_$master_date/ ]; then
 		ciop-copy -O ${PROCESS} ${insar_master}
@@ -73,9 +74,9 @@ while read line; do
 	
 
 	ciop-log "INFO" "Processing scene of $sensing_date"
-	if [ $sensing_date != $premaster_date ];then
+	if [ $sensing_date != $master_date ];then
 		
-		cd ${PROCESS}/INSAR_${premaster_date}
+		cd ${PROCESS}/INSAR_${master_date}
 		mkdir ${sensing_date}
 		cd ${sensing_date}
 
