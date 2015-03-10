@@ -82,8 +82,10 @@ while read line; do
 
 		# step_orbit (extract orbits)
 		ln -s ${SLC}/${sensing_date} SLC
-		sed -i 's/Data_output_file:.*/Data_output_file:  '"${SLC}"'/'"${sensing_date}"'.slc' slave.res
-		sed -i 's/Data_output_file:.*/"Data_output_file:  '"${PROCESS}"'/INSAR_'"${master_date}"'/'"${master_date}"'_crop.slc' slave.res
+#		sed -i 's/Data_output_file:.*/Data_output_file: '$SLC'\/'$date'/' slave.res
+		sed -i 's/Data_output_file:.*/Data_output_file:  '${SLC}''${sensing_date}'.slc' slave.res
+		sed -i 's/Data_output_file:.*/Data_output_file:  '${PROCESS}'\/INSAR_'${master_date}'\/'${master_date}'_crop.slc' master.res
+		sed -i	's/DEM source file:.*/DEM source file:  '${DEM}'\/final_dem.dem' master.res                      	
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
 		step_orbit
 		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
