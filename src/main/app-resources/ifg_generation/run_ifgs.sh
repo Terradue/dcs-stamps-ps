@@ -83,8 +83,93 @@ while read line; do
 
 	ciop-log "INFO" "Processing scene of $sensing_date"
 	
+	if [ $sensing_date != $master_date ];then
+		
+		# 	go to master folder
+		cd ${PROCESS}/INSAR_${master_date}
+
+		# 	adjust the original file paths for the current node	       
+		sed -i "61s|Data_output_file:.*|Data_output_file:\t${PROCESS}/INSAR_${master_date}/${master_date}\_crop.slc|" master.res
+		sed -i "s|DEM source file:.*|DEM source file:\t	$TMPDIR/DEM/final_dem.dem|" master.res     
+		sed -i "s|MASTER RESULTFILE:.*|MASTER RESULTFILE:\t${PROCESS}/INSAR_${master_date}/master.res|" master.res
+		
+		# 	create slave folder and go into
+		mkdir ${sensing_date}
+		cd ${sensing_date}
+		
+		# 	link to SLC folder
+		ln -s ${SLC}/${sensing_date} SLC
+
+		# 	get the master and slave doris result files
+		cp -f SLC/slave.res  .
+		cp -f ../master.res .
+
+		# 	adjust paths for current node		
+		sed -i "s|Data_output_file:.*|Data_output_file:  $SLC/${sensing_date}/$sensing_date.slc|" slave.res
+		sed -i "s|SLAVE RESULTFILE:.*|SLAVE RESULTFILE:\t$SLC/${sensing_date}/slave.res|" slave.res            	
+
+		#ciop-log "INFO" "step_orbit for ${sensing_date} "
+		#doris orbit_Envisat.dorisin
+		#[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
+	
+		# 	copy Stamps version of coarse.dorisin into slave folder
+		cp $DORIS_SCR/coarse.dorisin .
+
+		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
+		sed -i 's/CC_NWIN.*/CC_NWIN         200/' coarse.dorisin  
+		
+		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
+		doris coarse.dorisin > step_coarse.log
+		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+
+		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calcultion of overall offset
+		offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		offsetP=`more coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+
+		# 	write the lines with the new overall offset into variable	 
+		replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
+		replaceP=`echo -e "Coarse_correlation_translation_pixels: \t" $offsetP`	
+
+		# 	replace full line of overall offset
+		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
+		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
+
+		######################################
+		######check for CPM size##############
+		######################################
+	
+		ciop-log "INFO" "doing image fine correlation for ${sensing_date}"
+		step_coreg_simple
+		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
+
+		ciop-log "INFO" "doing image simamp for ${sensing_date}"
+		step_dem
+		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
+
+		ciop-log "INFO" "doing resample for ${sensing_date}"
+		step_resample
+		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
+
+		ciop-log "INFO" "doing ifg generation for ${sensing_date}"
+		step_ifg
+		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
+
+		cd ../
+        	ciop-log "INFO" "create tar"
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
+        	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
+		ciop-log "INFO" "Publish -a insar_slaves"
+		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/${sensing_date}.tgz )"
+	
+	else
+		insar_slaves=""
+	fi 
+
+	ciop-log "INFO" "Will publish the final output"
+	echo "${insar_master},${slc_folders},${dem},${insar_slaves}" | ciop-publish -s	# check if slc_folders are still needed in the next node
+	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 done
 }
 cat | main
 exit ${SUCCESS}
-
