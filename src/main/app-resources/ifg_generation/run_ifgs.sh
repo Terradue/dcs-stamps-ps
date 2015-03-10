@@ -54,8 +54,8 @@ local res
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
-        IFS=',' read -r insar_master slc_folders dem <<< "$line"
-	ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
+        IFS=',' read -r insar_master slcs dem <<< "$line"
+	ciop-log "DEBUG" "1:$insar_master 2:$slcs 3:$dem"
 
 	if [ ! -d ${PROCESS}/INSAR_$master_date/ ]; then
 		ciop-copy -O ${PROCESS} ${insar_master}
