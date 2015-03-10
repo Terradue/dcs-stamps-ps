@@ -67,7 +67,7 @@ while read line; do
 		
 	#fi
 
-	cioplog "INFO" "Input: $slc_folders"
+	ciop-log "INFO" "Input: $slc_folders"
 	#ciop-copy -O ${SLC} ${slc_folders}
 	[ $? -ne 0 ] && return ${ERR_SLC_RETRIEVE}
 	
