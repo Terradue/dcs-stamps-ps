@@ -132,7 +132,7 @@ while read line; do
 		######################################
 	
 		ciop-log "INFO" "doing image fine correlation for ${sensing_date}"
-		step_coreg
+		step_coreg_simple
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
 		ciop-log "INFO" "doing image simamp for ${sensing_date}"
