@@ -77,23 +77,33 @@ while read line; do
 	if [ $sensing_date != $master_date ];then
 		
 		cd ${PROCESS}/INSAR_${master_date}
+
+		sed -i 's/Data_output_file:.*/Data_output_file:  '${PROCESS}'\/INSAR_'${master_date}'\/'${master_date}'_crop.slc/' master.res
+		sed -i 's/DEM source file:.*/DEM source file:  '${DEM}'\/final_dem.dem/' master.res     
+
 		mkdir ${sensing_date}
 		cd ${sensing_date}
 
 		# step_orbit (extract orbits)
 		ln -s ${SLC}/${sensing_date} SLC
-#		sed -i 's/Data_output_file:.*/Data_output_file: '$SLC'\/'$date'/' slave.res
+
+		cp slave.res slave.res2
+		cp master.res master.res2
+
+		cp -f SLC/slave.res  .
+		cp -f ../master.res .
+		cp $DORIS_SCR/orbit_Envisat.dorisin .
+		
 		sed -i 's/Data_output_file:.*/Data_output_file:  '${SLC}'\/'${sensing_date}'.slc/' slave.res
-		sed -i 's/Data_output_file:.*/Data_output_file:  '${PROCESS}'\/INSAR_'${master_date}'\/'${master_date}'_crop.slc/' master.res
-		sed -i 's/DEM source file:.*/DEM source file:  '${DEM}'\/final_dem.dem/' master.res                      	
+		                 	
 		ciop-log "INFO" "step_orbit for ${sensing_date} "
-		step_orbit
+		doris orbit_Envisat.dorisin
 		[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
 	
 		####sed for coarse.dorisin####
 		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
 		
-		cp $DORIS_SCR/coarse.dorisin
+		cp $DORIS_SCR/coarse.dorisin .
 		sed -i 's/CC_NWIN.*/"CC_NWIN         100"/' coarse.dorisin  # perhaps 200
 		doris coarse.dorisin > step_coarse.log
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
