@@ -34,6 +34,8 @@ ERR_MASTER_TIMING=21
 ERR_INSAR_TAR=15
 ERR_INSAR_PUBLISH=17
 ERR_FINAL_PUBLISH=19
+ERR_DEM_TAR=21
+ERR_DEM_PUBLISH=23
 
 # add a trap to exit gracefully
 cleanExit() {
@@ -53,6 +55,8 @@ ${ERR_DEM}) msg="could not create DEM";;
 ${ERR_MASTER_TIMING}) msg="couldn't run step_master_timing";;
 ${ERR_INSAR_TAR}) msg="couldn't create tgz archive for publishing";;
 ${ERR_INSAR_PUBLISH}) msg="couldn't publish new INSAR_MASTER folder";;
+${ERR_DEM_TAR}) msg="couldn't create DEM.tgz archive for publishing";;
+${ERR_DEM_PUBLISH}) msg="couldn't publish the DEM folder";;
 ${ERR_FINAL_PUBLISH}) msg="couldn't publish final output";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
@@ -192,22 +196,22 @@ tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
 [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 ciop-log "INFO" "Publishing the newly created INSAR_$master_date folder"
-insar_master="$( ciop-publish -a INSAR_${master_date}.tgz )"
+insar_master=$( ciop-publish -a INSAR_${master_date}.tgz )
 [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
 cd ${TMPDIR}
+ciop-log "INFO" "Archiving the DEM folder"
 tar cvfz DEM.tgz DEM
-[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+[ $? -ne 0 ] && return ${ERR_DEM_TAR}
 
 ciop-log "INFO" "Publishing the DEM folder"
-dem="$( ciop-publish -a DEM.tgz )"
-[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+dem=$( ciop-publish -a DEM.tgz )
+[ $? -ne 0 ] && return ${ERR_DEM_PUBLISH}
 	
-for slc_folder in ${TMPDIR}/slc_folders.tmp; do
+for slcs in ${TMPDIR}/slc_folders.tmp; do
 	ciop-log "INFO" "Will publish the final output"
 	echo $slc_folder
-	echo "${insar_master},${slc_folder},${dem}" | ciop-publish -s	
-#	echo "${insar_master},${slc_folder}" | ciop-publish -s	
+	echo "${insar_master},${slcs},${dem}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 done
 
