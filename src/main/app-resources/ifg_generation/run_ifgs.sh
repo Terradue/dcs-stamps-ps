@@ -58,20 +58,30 @@ while read line; do
         IFS=',' read -r insar_master slc_folders dem <<< "$line"
 	ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
 
-	#if [ ! -d ${PROCESS}/INSAR_$master_date/ ]; then
-	#	ciop-copy -O ${PROCESS} ${insar_master}
-	#	[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
+	if [ ! -d ${PROCESS}/INSAR_$master_date/ ]; then
+	
+		ciop-copy -O ${PROCESS} ${insar_master}
+		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
 		
-	#	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
-	#	ciop-log "INFO" "Final Master Date: $master_date"
+		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
+		ciop-log "INFO" "Final Master Date: $master_date"
 		
-	#fi
+	fi
 
-	ciop-log "INFO" "Input: $slc_folders"
-	#ciop-copy -O ${SLC} ${slc_folders}
+	if [ ! ${TMPDIR}/DEM/final_dem.dem ]; then
+
+	ciop-copy -O ${TMPDIR} ${dem}
+	[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
+
+	fi
+
+	ciop-copy -O ${SLC} ${slc_folders}
 	[ $? -ne 0 ] && return ${ERR_SLC_RETRIEVE}
 	
-	#sensing_date=`basename ${slc_folders} | cut -c 1-8`
+	sensing_date=`basename ${slc_folders} | cut -c 1-8`
+	
+
+	ciop-log "INFO" "Processing scene of $sensing_date"
 	
 done
 }
