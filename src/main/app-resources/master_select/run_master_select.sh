@@ -208,7 +208,7 @@ ciop-log "INFO" "Publishing the DEM folder"
 dem=$( ciop-publish -a ${TMPDIR}/DEM.tgz )
 [ $? -ne 0 ] && return ${ERR_DEM_PUBLISH}
 	
-for slcs in ${TMPDIR}/slc_folders.tmp; do
+for slcs in `cat ${TMPDIR}/slc_folders.tmp`; do
 	ciop-log "INFO" "Will publish the final output"
 	echo "${insar_master},${slcs},${dem}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}

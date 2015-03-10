@@ -1,6 +1,6 @@
 #! /bin/bash
 mode=$1
-set -x 
+#set -x 
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
@@ -70,7 +70,9 @@ while read line; do
 	[ $? -ne 0 ] && return ${ERR_SLC_RETRIEVE}
 	
 	sensing_date=`basename ${slc_folders} | cut -c 1-8`
+	
 
+	ciop-log "INFO" "Processing scene of $sensing_date"
 	if [ $sensing_date != $premaster_date ];then
 		
 		cd ${PROCESS}/INSAR_${premaster_date}
@@ -105,6 +107,9 @@ while read line; do
 		# 	replace full line of overall offset
 		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
 		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
+
+
+		######check for CPM size##############
 
 		ciop-log "INFO" "doing image fine correlation for ${sensing_date}"
 		#step_coreg
