@@ -210,7 +210,6 @@ dem=$( ciop-publish -a ${TMPDIR}/DEM.tgz )
 	
 for slcs in ${TMPDIR}/slc_folders.tmp; do
 	ciop-log "INFO" "Will publish the final output"
-	echo $slc_folder
 	echo "${insar_master},${slcs},${dem}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 done
