@@ -58,7 +58,7 @@ while read line; do
         IFS=',' read -r insar_master slc_folders dem <<< "$line"
 	ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
 
-	if [ ! -d "${PROCESS}/INSAR_$master_date/" ]; then
+	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
 	
 		ciop-copy -O ${PROCESS} ${insar_master}
 		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
@@ -148,8 +148,11 @@ while read line; do
 			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
 			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
 			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    echo "CRD_IN_DEM   ${TMPDIR}/DEM/final_dem.dem" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
+			    grep "SAM_IN" ${PROCESS}/INSAR_${master_date}/timing.dorisin | sed 's/SAM/CRD/' >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
 			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+
+			    sed -i "s|CRD_IN_DEM.*|CRD_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" dem.dorisin
+			    sed -i "s|SAM_IN_DEM.*|SAM_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" timing.dorisin
 		fi
 
 		ciop-log "INFO" "doing image simamp for ${sensing_date}"
@@ -173,11 +176,8 @@ while read line; do
 		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
 		
 		ciop-log "INFO" "Will publish the final output"
-	#	echo "${insar_master},${slc_folders},${dem},${insar_slaves}" | ciop-publish -s	# check if slc_folders are still needed in the next node
 		echo "${insar_master},${insar_slaves},${dem}" | ciop-publish -s	
 		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
-
-		ciop-log "INFO" "Fatto!!!"
 
 	fi 
 
