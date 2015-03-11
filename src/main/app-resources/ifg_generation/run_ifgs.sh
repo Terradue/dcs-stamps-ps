@@ -148,7 +148,7 @@ while read line; do
 			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
 			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
 			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    echo "CRD_IN   ${TMPDIR}/DEM/final_dem.dem" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
+			    echo "CRD_IN_DEM   ${TMPDIR}/DEM/final_dem.dem" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
 			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
 		fi
 
