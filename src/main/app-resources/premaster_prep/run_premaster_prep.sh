@@ -74,8 +74,8 @@ main() {
   [ $? -ne 0 ] && return ${ERR_MASTER_REF}
 
    ciop-log "INFO" "Retrieving master"
-   premaster=$( get_data ${master_ref} ${TMPDIR} ) #for final version
-   premaster=`echo ${premaster_ref} | ciop-copy -o ${RAW} -f -`
+   premaster=$( get_data ${premaster_ref} ${RAW} ) #for final version
+   #premaster=`echo ${premaster_ref} | ciop-copy -o ${RAW} -f -`
    [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
   ciop-log "INFO" "Get sensing date"
@@ -117,29 +117,18 @@ main() {
   echo "last_p $MAS_WIDTH" >> master_crop.in
   step_master_setup
   [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
-
-  # package 
- # cd ${SLC}
- # tar cvfz txt.tgz ar.txt looks.txt
- # [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
-   
-  #txt_ref="$( ciop-publish -a ${TMPDIR}/SLC/txt.tgz )" 
-  #[ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
-  #rm -f txt.tgz 
  
   cd ${PROCESS}
   tar cvfz premaster_${sensing_date}.tgz INSAR_${sensing_date} 
-#${sensing_date}.tgz ${sensing_date}
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
+
   premaster_slc_ref="$( ciop-publish -a ${PROCESS}/premaster_${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
   while read scene_ref; do
-    #echo "${premaster_slc_ref},${txt_ref},${scene_ref}" | ciop-publish -s
-    echo "${premaster_slc_ref},${scene_ref}" | ciop-publish -s
+  	echo "${premaster_slc_ref},${scene_ref}" | ciop-publish -s
   done
 
-chmod -R 777 $TMPDIR # not for final version
 }
 cat | main
 res=$?
