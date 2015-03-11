@@ -80,7 +80,6 @@ while read line; do
 	
 	sensing_date=`basename ${slc_folders} | cut -c 1-8`
 	
-
 	ciop-log "INFO" "Processing scene of $sensing_date"
 	
 	if [ $sensing_date != $master_date ];then
@@ -154,22 +153,25 @@ while read line; do
 		step_ifg
 		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
 
-		cd ../
+		cd ${PROCESS}/INSAR_${master_date}
         	ciop-log "INFO" "create tar"
         	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
         	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-		ciop-log "INFO" "Publish -a insar_slaves"
-		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/${sensing_date}.tgz )"
-	
-	else
-		insar_slaves=""
+		#ciop-log "INFO" "Publish -a insar_slaves"
+		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
+		
+		ciop-log "INFO" "Will publish the final output"
+	#	echo "${insar_master},${slc_folders},${dem},${insar_slaves}" | ciop-publish -s	# check if slc_folders are still needed in the next node
+		echo "${insar_master},${insar_slaves},${dem}" | ciop-publish -s	
+		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+
+		ciop-log "INFO" "Fatto!!!"
+
 	fi 
 
-	ciop-log "INFO" "Will publish the final output"
-	echo "${insar_master},${slc_folders},${dem},${insar_slaves}" | ciop-publish -s	# check if slc_folders are still needed in the next node
-	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 done
+
 }
 cat | main
 exit ${SUCCESS}
