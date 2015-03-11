@@ -80,16 +80,9 @@ while read line; do
 
 	mkdir $RAW
 	ciop-log "INFO" "Processing input: $line"
-#       IFS=',' read -r premaster_slc_ref txt_ref scene_ref <<< "$line"
         IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
 
-#        ciop-log "DEBUG" "1:$premaster_slc_ref 2:$txt_ref 3:$scene_ref"
         ciop-log "DEBUG" "1:$premaster_slc_ref 2:$scene_ref"
-#       [ ${first} == "TRUE" ] && {
-#       ciop-copy -O ${SLC} ${txt_ref}
-#	[ $? -ne 0 ] && return ${ERR_MASTER_SLC}
-#       first=FALSE
-#       }
 
 	scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
         [ $? -ne 0 ] && return ${ERR_SCENE}

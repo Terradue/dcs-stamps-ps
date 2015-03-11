@@ -74,7 +74,7 @@ main() {
   [ $? -ne 0 ] && return ${ERR_MASTER_REF}
 
    ciop-log "INFO" "Retrieving master"
-#  premaster=$( get_data ${master_ref} ${TMPDIR} ) #for final version
+   premaster=$( get_data ${master_ref} ${TMPDIR} ) #for final version
    premaster=`echo ${premaster_ref} | ciop-copy -o ${RAW} -f -`
    [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
