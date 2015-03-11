@@ -61,8 +61,8 @@ ${ERR_FINAL_PUBLISH}) msg="couldn't publish final output";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-#[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
-[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
+[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+#[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -150,36 +150,12 @@ step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
 
 # DEM steps
-
-#---------workaround due to casmeta problem---------------#
-
-  #target=${TMPDIR}/DEM
-  #wdir=${PWD}/.wdir
-  #mkdir ${wdir}
-  #mkdir -p ${target}
-
-  #target=$( cd ${target} && pwd )
-
- # cd ${wdir}
-  # Istanbul track 336
- # construct_dem.sh dem 28.4 30.3 40.2 41.7 SRTM3 || return 1
-  
- # cp -v ${wdir}/dem/final_dem.dem ${target}
-#  cp -v ${wdir}/dem/input.doris_dem ${target}
-
-  #sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
-  #cd - &> /dev/null
-
- # rm -fr ${wdir}
-#---------workaround due to casmeta problem---------------#
-
-# ------------actual code-------------------#	
 # getting the original file url for dem fucntion
 master_ref=`cat $master_date.url`
 ciop-log "INFO" "Prepare DEM with: $master_ref"		
 dem ${master_ref} ${TMPDIR}/DEM
 [ $? -ne 0 ] && return ${ERR_DEM}
-# ------------actual code-------------------#
+
 	
 head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${PROCESS}/INSAR_${master_date}/timing.dorisin
 cat ${TMPDIR}/DEM/input.doris_dem >> ${PROCESS}/INSAR_${master_date}/timing.dorisin  
