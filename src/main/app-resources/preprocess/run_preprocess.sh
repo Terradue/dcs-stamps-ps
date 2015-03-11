@@ -83,8 +83,8 @@ while read line; do
         IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
 
         ciop-log "DEBUG" "1:$premaster_slc_ref 2:$scene_ref"
-
-	scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
+	scene=( get_data ${scene_ref} ${RAW} ) 
+	#scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
         [ $? -ne 0 ] && return ${ERR_SCENE}
         ciop-log "INFO" "Processing scene: $scene"
 

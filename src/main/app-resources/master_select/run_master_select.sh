@@ -106,7 +106,7 @@ while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
         IFS=',' read -r premaster_slc_ref slc_folders insar_slaves <<< "$line"
-	ciop-log "DEBUG" "1:$premaster_slc_ref 2:$scene_ref 3:$insar_slaves"
+	ciop-log "DEBUG" "1:$premaster_slc_ref 2:$slc_folders 3:$insar_slaves"
 	
 	if [ ! -d ${PROCESS}/INSAR_$premaster_date/ ]; then
 		
@@ -153,32 +153,32 @@ step_master_setup
 
 #---------workaround due to casmeta problem---------------#
 
-  target=${TMPDIR}/DEM
-  wdir=${PWD}/.wdir
-  mkdir ${wdir}
-  mkdir -p ${target}
+  #target=${TMPDIR}/DEM
+  #wdir=${PWD}/.wdir
+  #mkdir ${wdir}
+  #mkdir -p ${target}
 
   #target=$( cd ${target} && pwd )
 
-  cd ${wdir}
+ # cd ${wdir}
   # Istanbul track 336
-  construct_dem.sh dem 28.4 30.3 40.2 41.7 SRTM3 || return 1
+ # construct_dem.sh dem 28.4 30.3 40.2 41.7 SRTM3 || return 1
   
-  cp -v ${wdir}/dem/final_dem.dem ${target}
-  cp -v ${wdir}/dem/input.doris_dem ${target}
+ # cp -v ${wdir}/dem/final_dem.dem ${target}
+#  cp -v ${wdir}/dem/input.doris_dem ${target}
 
-  sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
-  cd - &> /dev/null
+  #sed -i "s#\(SAM_IN_DEM *\).*/\(final_dem.dem\)#\1$target/\2#g" ${target}/input.doris_dem
+  #cd - &> /dev/null
 
-  rm -fr ${wdir}
+ # rm -fr ${wdir}
 #---------workaround due to casmeta problem---------------#
 
 # ------------actual code-------------------#	
 # getting the original file url for dem fucntion
-#master_ref=`cat $master_date.url`
-#ciop-log "INFO" "Prepare DEM with: $master_ref"		
-#dem ${master_ref} ${TMPDIR}/DEM
-#[ $? -ne 0 ] && return ${ERR_DEM}
+master_ref=`cat $master_date.url`
+ciop-log "INFO" "Prepare DEM with: $master_ref"		
+dem ${master_ref} ${TMPDIR}/DEM
+[ $? -ne 0 ] && return ${ERR_DEM}
 # ------------actual code-------------------#
 	
 head -n 28 ${STAMPS}/DORIS_SCR/timing.dorisin > ${PROCESS}/INSAR_${master_date}/timing.dorisin
