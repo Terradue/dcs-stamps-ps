@@ -89,7 +89,7 @@ while read line; do
 
 		# 	adjust the original file paths for the current node	       
 		sed -i "61s|Data_output_file:.*|Data_output_file:\t${PROCESS}/INSAR_${master_date}/${master_date}\_crop.slc|" master.res
-		sed -i "s|DEM source file:.*|DEM source file:\t	$TMPDIR/DEM/final_dem.dem|" master.res     
+		sed -i "s|DEM source file:.*|DEM source file:\t	${TMPDIR}/DEM/final_dem.dem|" master.res     
 		sed -i "s|MASTER RESULTFILE:.*|MASTER RESULTFILE:\t${PROCESS}/INSAR_${master_date}/master.res|" master.res
 		
 		# 	create slave folder and go into
@@ -140,6 +140,17 @@ while read line; do
 		ciop-log "INFO" "doing image fine correlation for ${sensing_date}"
 		step_coreg_simple
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
+
+		# prepare dem.dorisin with right dem path
+		if [ ! -e ${PROCESS}/INSAR_${master_date}/dem.dorisin ]; then
+			    sed -n '1,/step comprefdem/p' $DORIS_SCR/dem.dorisin > ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "# CRD_METHOD      trilinear" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_IN   ${TMPDIR}/DEM/final_dem.dem" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
+			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+		fi
 
 		ciop-log "INFO" "doing image simamp for ${sensing_date}"
 		step_dem
