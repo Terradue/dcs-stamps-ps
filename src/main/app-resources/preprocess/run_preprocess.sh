@@ -61,8 +61,8 @@ ${ERR_STEP_COARSE}) msg="Failed to process step_coarse";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
-#[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR # not for final version
+#[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR # not for final version
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -167,7 +167,7 @@ while read line; do
         	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 		ciop-log "INFO" "Publish -a insar_slaves"
-		insar_slaves="$( ciop-publish -a ${SLC}/${sensing_date}.tgz )"
+		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${premaster_date}/INSAR_${sensing_date}.tgz )"
 	
 	else
 		insar_slaves=""
