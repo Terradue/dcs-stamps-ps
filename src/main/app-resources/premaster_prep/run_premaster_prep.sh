@@ -1,6 +1,6 @@
 #!/bin/bash
 mode=$1
-set -x
+
 
 export PATH=${_CIOP_APPLICATION_PATH}/master_slc/bin:$PATH
 
@@ -50,8 +50,8 @@ function cleanExit() {
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
     "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-
-  [ -n "${TinMPDIR}" ] && rm -rf ${TMPDIR}
+  [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+ #  [ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 
@@ -61,6 +61,7 @@ trap cleanExit EXIT
 main() {
   local res
 
+  
   # creates the adore directory structure
   ciop-log "INFO" "creating the directory structure"
   set_env
@@ -69,16 +70,19 @@ main() {
   orbits="$( get_orbit_flag )"
   [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
   
-  master_ref="$( ciop-getparam master )"
+  premaster_ref="$( ciop-getparam master )"
+  [ $? -ne 0 ] && return ${ERR_MASTER_REF}
+
+   ciop-log "INFO" "Retrieving master"
+   premaster=$( get_data ${premaster_ref} ${RAW} ) #for final version
+   #premaster=`echo ${premaster_ref} | ciop-copy -o ${RAW} -f -`
+   [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
   
-  ciop-log "INFO" "Retrieving master"
-  master=$( get_data ${master_ref} ${TMPDIR} )
-  [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
-  
-  sensing_date=$( get_sensing_date ${master} )
+  ciop-log "INFO" "Get sensing date"
+  sensing_date=$( get_sensing_date ${premaster} )
   [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
   
-  mission=$( get_mission ${master} | tr "A-Z" "a-z" )
+  mission=$( get_mission ${premaster} | tr "A-Z" "a-z" )
   [ $? -ne 0 ] && return ${ERR_MISSION_MASTER}
   [ ${mission} == "asar" ] && flag="envi"
   
@@ -87,16 +91,16 @@ main() {
   # [ ${mission} == "ers" ] && flag="ers"
   # [ ${mission} == "ers_envi" ] && flag="ers_envi"
   
-  master_folder=${TMPDIR}/SLC/${sensing_date}
-  mkdir -p ${master_folder}
+  premaster_folder=${SLC}/${sensing_date}
+  mkdir -p ${premaster_folder}
   
   get_aux ${mission} ${sensing_date} ${orbits} 
   [ $? -ne 0 ] && return ${ERR_AUX}
   
-  cd ${master_folder}
+  cd ${premaster_folder}
   slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
   ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
-  ln -s ${master}   
+  ln -s ${premaster}   
   ${slc_bin}
   [ $? -ne 0 ] && return ${ERR_SLC}
  
@@ -113,30 +117,19 @@ main() {
   echo "last_p $MAS_WIDTH" >> master_crop.in
   step_master_setup
   [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
-
-  # package 
-  cd ${TMPDIR}/SLC
-  tar cvfz txt.tgz ar.txt looks.txt
-  [ $? -ne 0 ] && return ${ERR_SLC_AUX_TAR}
-   
-  txt_ref="$( ciop-publish -a ${TMPDIR}/SLC/txt.tgz )" 
-  [ $? -ne 0 ] && return ${ERR_SLC_AUX_PUBLISH}
-  rm -f txt.tgz 
  
-  cd ${TMPDIR}
-  tar cvfz master_${sensing_date}.tgz SLC INSAR_${sensing_date} 
-#${sensing_date}.tgz ${sensing_date}
+  cd ${PROCESS}
+  tar cvfz premaster_${sensing_date}.tgz INSAR_${sensing_date} 
   [ $? -ne 0 ] && return ${ERR_SLC_TAR}
-  master_slc_ref="$( ciop-publish -a ${TMPDIR}/master_${sensing_date}.tgz )"
+
+  premaster_slc_ref="$( ciop-publish -a ${PROCESS}/premaster_${sensing_date}.tgz )"
   [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
   
-  while read slave_ref; do
-    echo "${master_slc_ref},${txt_ref},${slave_ref}" | ciop-publish -s
+  while read scene_ref; do
+  	echo "${premaster_slc_ref},${scene_ref}" | ciop-publish -s
   done
-}
 
-cat | main 
-#res=$?
-#[ ${res} -ne 0 ] && exit ${res}
-#[ "${mode}" != "test" ] && exit 0
-exit ${SUCCESS}
+}
+cat | main
+res=$?
+exit ${res}
