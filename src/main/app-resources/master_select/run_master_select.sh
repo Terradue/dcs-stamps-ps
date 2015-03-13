@@ -126,12 +126,13 @@ done
 
 cd $PROCESS/INSAR_${premaster_date}
 
-#master_select > master.date
-#[ $? -ne 0 ] && return ${ERR_MASTER_SELECT}
-#master_date=`awk 'NR == 12' master.date | awk $'{print $1}'`
-master_date=20100415
+master_select > master.date
+[ $? -ne 0 ] && return ${ERR_MASTER_SELECT}
+master_date=`awk 'NR == 12' master.date | awk $'{print $1}'`
+
 ciop-log "INFO" "Choose SLC from $master_date as final master"
 
+#master_date=20100415
 master=`grep ${master_date} ${TMPDIR}/slc_folders.tmp`
 
 ciop-log "INFO" "Retrieve final master SLC from ${master_date}"
