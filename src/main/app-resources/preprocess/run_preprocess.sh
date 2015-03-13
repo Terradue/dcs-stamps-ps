@@ -61,8 +61,8 @@ ${ERR_STEP_COARSE}) msg="Failed to process step_coarse";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-#[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
-[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR # not for final version
+[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+#[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR # not for final version
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
