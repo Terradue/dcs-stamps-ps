@@ -113,7 +113,8 @@ while read line; do
 	
 		# 	copy Stamps version of coarse.dorisin into slave folder
 		cp $DORIS_SCR/coarse.dorisin .
-
+		rm -f coreg.out
+	
 		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
 		sed -i 's/CC_NWIN.*/CC_NWIN         200/' coarse.dorisin  
 		
