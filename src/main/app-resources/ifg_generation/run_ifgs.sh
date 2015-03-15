@@ -21,9 +21,16 @@ set_env
 # define the exit codes
 SUCCESS=0
 ERR_MASTER_RETRIEVE=7
-ERR_UNTAR_MASTER=9
+ERR_DEM_RETRIEVE=9
 ERR_SLC_RETRIEVE=11
-
+ERR_STEP_COARSE=13
+ERR_STEP_COREG=15
+ERR_STEP_DEM=17
+ERR_STEP_RESAMPLE=19
+ERR_STEP_IFG=21
+ERR_INSAR_SLAVES_TAR=23
+ERR_INSAR_SLAVES_PUBLISH=25
+ERR_FINAL_PUBLISH=27
 
 # add a trap to exit gracefully
 cleanExit() {
@@ -32,13 +39,17 @@ local msg
 msg=""
 case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
-${ERR_MASTER_RETRIEVE}) msg="";;
-${ERR_UNTAR_MASTER}) msg="";;
-${ERR_SLC_RETRIEVE}) msg="";;
-${ERR_STEP_ORBIT}) msg="";;
-${ERR_MASTER_RETRIEVE}) msg="";;
-${ERR_MASTER_RETRIEVE}) msg="";;
-${ERR_MASTER_RETRIEVE}) msg="";;
+${ERR_MASTER_RETRIEVE}) msg="Failed to retrieve Master folder";;
+${ERR_DEM_RETRIEVE}) msg="Failed to retrieve DEM folder";;
+${ERR_SLC_RETRIEVE) msg="Failed to retrieve SLC folder";;
+${ERR_STEP_COARSE}) msg="Failed to do coarse image correlation";;
+${ERR_STEP_COREG}) msg="Failed to do fine image correlation";;
+${ERR_STEP_DEM}) msg="Failed to do simulate amplitude";;
+${ERR_STEP_RESAMPLE) msg="Failed to resample image";;
+${ERR_STEP_IFG}) msg=" Failed to create IFG";;
+${ERR_INSAR_SLAVES_TAR}) msg="Failed to tar Insar Slave folder";;
+${ERR_INSAR_SLAVES_PUBLISH}) msg="Failed to publish Insar Slave folder";;
+${ERR_FINAL_PUBLISH}) msg="Failed to publish all output together";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
@@ -60,6 +71,7 @@ while read line; do
 
 	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
 	
+		ciop-log "INFO" "Retrieving Master folder"
 		ciop-copy -O ${PROCESS} ${insar_master}
 		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
 		
@@ -70,18 +82,21 @@ while read line; do
 
 	if [ ! -e "${TMPDIR}/DEM/final_dem.dem" ]; then
 
+	ciop-log "INFO" "Retrieving DEM folder"
 	ciop-copy -O ${TMPDIR} ${dem}
 	[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
 
 	fi
 
+	ciop-log "INFO" "Retrieving SLC folder"
 	ciop-copy -O ${SLC} ${slc_folders}
 	[ $? -ne 0 ] && return ${ERR_SLC_RETRIEVE}
 	
+	# 	get sensing date
 	sensing_date=`basename ${slc_folders} | cut -c 1-8`
+	ciop-log "INFO" "Processing scene from $sensing_date"
 	
-	ciop-log "INFO" "Processing scene of $sensing_date"
-	
+	# 	Process all slaves
 	if [ $sensing_date != $master_date ];then
 		
 		# 	go to master folder
@@ -92,7 +107,7 @@ while read line; do
 		sed -i "s|DEM source file:.*|DEM source file:\t	${TMPDIR}/DEM/final_dem.dem|" master.res     
 		sed -i "s|MASTER RESULTFILE:.*|MASTER RESULTFILE:\t${PROCESS}/INSAR_${master_date}/master.res|" master.res
 		
-		# 	create slave folder and go into
+		# 	create slave folder and change to it
 		mkdir ${sensing_date}
 		cd ${sensing_date}
 		
@@ -107,10 +122,6 @@ while read line; do
 		sed -i "s|Data_output_file:.*|Data_output_file:  $SLC/${sensing_date}/$sensing_date.slc|" slave.res
 		sed -i "s|SLAVE RESULTFILE:.*|SLAVE RESULTFILE:\t$SLC/${sensing_date}/slave.res|" slave.res            	
 
-		#ciop-log "INFO" "step_orbit for ${sensing_date} "
-		#doris orbit_Envisat.dorisin
-		#[ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
-	
 		# 	copy Stamps version of coarse.dorisin into slave folder
 		cp $DORIS_SCR/coarse.dorisin .
 		rm -f coreg.out
@@ -118,7 +129,7 @@ while read line; do
 		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
 		sed -i 's/CC_NWIN.*/CC_NWIN         200/' coarse.dorisin  
 		
-		ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
+		ciop-log "INFO" "coarse image correlation for ${sensing_date}"
 		doris coarse.dorisin > step_coarse.log
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 
@@ -138,7 +149,7 @@ while read line; do
 		######check for CPM size##############
 		######################################
 	
-		ciop-log "INFO" "doing image fine correlation for ${sensing_date}"
+		ciop-log "INFO" "fine image correlation for ${sensing_date}"
 		step_coreg_simple
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
@@ -156,25 +167,28 @@ while read line; do
 			    sed -i "s|SAM_IN_DEM.*|SAM_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/timing.dorisin
 		fi
 
-		ciop-log "INFO" "doing image simamp for ${sensing_date}"
+		ciop-log "INFO" "simulating amplitude for ${sensing_date}"
 		step_dem
 		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
 
-		ciop-log "INFO" "doing resample for ${sensing_date}"
+		ciop-log "INFO" "resampling ${sensing_date}"
 		step_resample
 		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
 
-		ciop-log "INFO" "doing ifg generation for ${sensing_date}"
+		ciop-log "INFO" "IFG generation for ${sensing_date}"
 		step_ifg
 		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
 
 		cd ${PROCESS}/INSAR_${master_date}
-        	ciop-log "INFO" "create tar"
-        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
-        	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+        	ciop-log "INFO" "create tar for INSAR SLave folder"
+    #    	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cintminrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log  
+        	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}  #${sensing_date}/ref_dem1l.raw 
 
-		#ciop-log "INFO" "Publish -a insar_slaves"
+
+		ciop-log "INFO" "Publish -a insar_slaves"
 		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
+		[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_PUBLISH}
 		
 		ciop-log "INFO" "Will publish the final output"
 		echo "${insar_master},${insar_slaves},${dem}" | ciop-publish -s	
