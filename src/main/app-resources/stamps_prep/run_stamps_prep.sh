@@ -14,6 +14,9 @@ source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 # source sar helpers and functions
 set_env
 
+# source MCR 
+MCR="/usr/local/MATLAB/MATLAB_Compiler_Runtime/v717"
+
 #--------------------------------
 #       2) Error Handling       
 #--------------------------------
@@ -125,11 +128,11 @@ while read line; do
 done < patch_size.txt
 
 ciop-log "INFO" "Running Stamps step 1"
-/opt/StaMPS_v3.3b1/matlab/stamps MCR 1 1
+/opt/StaMPS_v3.3b1/matlab/stamps $MCR 1 1
 [ $? -ne 0 ] && return ${ERR_STAMPS_1}
 
 ciop-log "INFO" "creating tar for InSAR Master folder"
-tar cvfz INSAR_${master_date}.tgz *.txt *.out *.res *.in *.m *.mat 
+tar cvfz INSAR_${master_date}.tgz *.txt *.out *.res *.in *.m *.mat patch.list
 [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 ciop-log "INFO" "publishing InSAR Master folder"
