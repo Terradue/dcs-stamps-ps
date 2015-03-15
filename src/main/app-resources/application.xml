@@ -41,6 +41,14 @@
         </defaultJobconf>
     </jobTemplate>
   </jobTemplates>
+ <jobTemplate id="ifg_gener">
+      <streamingExecutable>/application/ifg_generation/run_ifgs.sh</streamingExecutable>
+	<defaultJobconf>
+	<property id="ciop.job.max.tasks">1</property>
+        <property id="mapred.task.timeout">9900000000</property>
+        </defaultJobconf>
+    </jobTemplate>
+  </jobTemplates>
   <workflow id="dcs-stamps-ps" title="StaMPS" abstract="StaMPS">
     <workflowVersion>1.0</workflowVersion>
      <node id="node_premaster_prep">
@@ -68,6 +76,13 @@
         <job id="ifg_gener" />
           <sources>
           <source refid="wf:node">node_master_select</source>
+          </sources>
+          <parameters/>
+      </node>
+ <node id="node_stamps_prep">
+        <job id="stamps_prep" />
+          <sources>
+          <source refid="wf:node">node_ifg_gener</source>
           </sources>
           <parameters/>
       </node>
