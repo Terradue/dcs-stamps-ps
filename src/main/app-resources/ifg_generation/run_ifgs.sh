@@ -197,7 +197,6 @@ while read line; do
 	fi 
 
 done
-
 }
 cat | main
 exit ${SUCCESS}
