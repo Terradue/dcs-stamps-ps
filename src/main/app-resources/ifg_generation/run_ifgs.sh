@@ -108,7 +108,7 @@ while read line; do
 		sed -i "s|MASTER RESULTFILE:.*|MASTER RESULTFILE:\t${PROCESS}/INSAR_${master_date}/master.res|" master.res
 		
 		# 	create slave folder and change to it
-		mkdir ${sensing_date}
+		mkdir -p ${sensing_date}
 		cd ${sensing_date}
 		
 		# 	link to SLC folder

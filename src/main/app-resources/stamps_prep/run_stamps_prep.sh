@@ -64,7 +64,7 @@ trap cleanExit EXIT
 
 main() {
 local res
-#	master_date=""
+#master_date=""
 first=TRUE
 
 
@@ -92,8 +92,6 @@ while read line; do
 	ciop-log "INFO" "Retrieving DEM folder"
 	ciop-copy -O ${TMPDIR} ${dem}
 	[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
-
-#	fi
 	}
 	
 	ciop-log "INFO" "Retrieving SLC folder"
@@ -152,10 +150,11 @@ while read line; do
 	ciop-log "INFO" "publishing the final output"
 	echo "${insar_master},${patches}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
-}
+
 
 done < patch.list
 
+}
 cat | main
 exit ${SUCCESS}
 
