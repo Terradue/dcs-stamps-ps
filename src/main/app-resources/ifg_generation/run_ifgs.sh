@@ -41,7 +41,7 @@ case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
 ${ERR_MASTER_RETRIEVE}) msg="Failed to retrieve Master folder";;
 ${ERR_DEM_RETRIEVE}) msg="Failed to retrieve DEM folder";;
-${ERR_SLC_RETRIEVE) msg="Failed to retrieve SLC folder";;
+${ERR_SLC_RETRIEVE}) msg="Failed to retrieve SLC folder";;
 ${ERR_STEP_COARSE}) msg="Failed to do coarse image correlation";;
 ${ERR_STEP_COREG}) msg="Failed to do fine image correlation";;
 ${ERR_STEP_DEM}) msg="Failed to do simulate amplitude";;
