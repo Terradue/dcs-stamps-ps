@@ -69,7 +69,7 @@ master_date=""
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
-        IFS=',' read -r insar_master sinsar_slaves <<< "$line"
+        IFS=',' read -r insar_master insar_slaves dem <<< "$line"
 	ciop-log "DEBUG" "1:$insar_master 2:$insar_slaves 3:$dem"
 
     	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
