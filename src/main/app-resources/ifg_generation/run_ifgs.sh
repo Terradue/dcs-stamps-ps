@@ -45,7 +45,7 @@ ${ERR_SLC_RETRIEVE) msg="Failed to retrieve SLC folder";;
 ${ERR_STEP_COARSE}) msg="Failed to do coarse image correlation";;
 ${ERR_STEP_COREG}) msg="Failed to do fine image correlation";;
 ${ERR_STEP_DEM}) msg="Failed to do simulate amplitude";;
-${ERR_STEP_RESAMPLE) msg="Failed to resample image";;
+${ERR_STEP_RESAMPLE}) msg="Failed to resample image";;
 ${ERR_STEP_IFG}) msg=" Failed to create IFG";;
 ${ERR_INSAR_SLAVES_TAR}) msg="Failed to tar Insar Slave folder";;
 ${ERR_INSAR_SLAVES_PUBLISH}) msg="Failed to publish Insar Slave folder";;
@@ -119,7 +119,7 @@ while read line; do
 		cp -f ../master.res .
 
 		# 	adjust paths for current node		
-		sed -i "s|Data_output_file:.*|Data_output_file:  $SLC/${sensing_date}/$sensing_date.slc|" slave.res
+		sed -i "s|Data_output_file:.*|Data_output_file:  $SLC/${sensing_date}/${sensing_date}.slc|" slave.res
 		sed -i "s|SLAVE RESULTFILE:.*|SLAVE RESULTFILE:\t$SLC/${sensing_date}/slave.res|" slave.res            	
 
 		# 	copy Stamps version of coarse.dorisin into slave folder
@@ -195,8 +195,8 @@ while read line; do
 		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
 	fi 
-
 done
+
 }
 cat | main
 exit ${SUCCESS}
