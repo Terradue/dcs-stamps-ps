@@ -91,7 +91,7 @@ while read line; do
 
 	fi
 	
-	sensing_date_gz=`basename $insar_slavess`
+	sensing_date_gz=`basename $insar_slaves`
 	sensing_date=${sensing_date_gz:-4}
 	ciop-log "INFO" "Retrieving SLC folder"
 	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${insar_slaves}
