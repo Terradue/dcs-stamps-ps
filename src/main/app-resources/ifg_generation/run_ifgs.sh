@@ -3,7 +3,7 @@ mode=$1
 #set -x 
 
 # source the ciop functions (e.g. ciop-log)
-#[ "${mode}" != "test" ] && source ${ciop_job_include}
+[ "${mode}" != "test" ] && source ${ciop_job_include}
 
 # source extra functions
 source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
