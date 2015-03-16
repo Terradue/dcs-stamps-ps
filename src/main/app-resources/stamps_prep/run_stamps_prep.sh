@@ -106,8 +106,12 @@ while read line; do
 	fi
 done
 
+
+
 ciop-log "INFO" "running mt_prep to load dta ino matlab variables"
 cd ${PROCESS}/INSAR_${master_date}/
+rm -rf 20100415
+
 mt_prep 0.42 4 5 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
 
