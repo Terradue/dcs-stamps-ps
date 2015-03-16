@@ -40,7 +40,6 @@
         <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
-  </jobTemplates>
  <jobTemplate id="stamps_prep">
       <streamingExecutable>/application/stamps_prep/run_stamps_prep.sh</streamingExecutable>
 	<defaultJobconf>
@@ -48,14 +47,12 @@
         <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
-  </jobTemplates>
  <jobTemplate id="stamps_parallel">
       <streamingExecutable>/application/stamps_parallel/run_stamps_parallel.sh</streamingExecutable>
 	<defaultJobconf>
         <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
-  </jobTemplates>
  <jobTemplate id="stamps_final">
       <streamingExecutable>/application/stamps_final/run_stamps_final.sh</streamingExecutable>
 	<defaultJobconf>
