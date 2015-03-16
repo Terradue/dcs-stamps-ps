@@ -41,8 +41,11 @@
         </defaultJobconf>
     </jobTemplate>
   </jobTemplates>
- <jobTemplate id="stamps_prep">
+  <jobTemplate id="stamps_prep">
       <streamingExecutable>/application/stamps_prep/run_stamps_prep.sh</streamingExecutable>
+	<defaultParameters>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	</defaultParameters>	
 	<defaultJobconf>
 	<property id="ciop.job.max.tasks">1</property>
         <property id="mapred.task.timeout">9900000000</property>
