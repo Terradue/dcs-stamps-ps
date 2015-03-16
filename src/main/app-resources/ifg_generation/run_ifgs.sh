@@ -3,7 +3,7 @@ mode=$1
 #set -x 
 
 # source the ciop functions (e.g. ciop-log)
-[ "${mode}" != "test" ] && source ${ciop_job_include}
+#[ "${mode}" != "test" ] && source ${ciop_job_include}
 
 # source extra functions
 source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
@@ -182,10 +182,8 @@ while read line; do
 
 		cd ${PROCESS}/INSAR_${master_date}
         	ciop-log "INFO" "create tar for INSAR SLave folder"
-    #    	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
         	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cint.minrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log  
         	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}  #${sensing_date}/ref_dem1l.raw 
-
 
 		ciop-log "INFO" "Publish -a insar_slaves"
 		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
