@@ -64,8 +64,8 @@ trap cleanExit EXIT
 
 main() {
 local res
-#master_date=""
-first=TRUE
+master_date=""
+
 
 
 while read line; do
@@ -74,9 +74,7 @@ while read line; do
         IFS=',' read -r insar_master slc_folders dem <<< "$line"
 	ciop-log "DEBUG" "1:$insar_master 2:$insar_slaves 3:$dem"
 
-[ ${first} == "TRUE" ] && {
-     
-#	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
+    	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
 	
 	ciop-log "INFO" "Retrieving Master folder"
 	ciop-copy -O ${PROCESS} ${insar_master}
@@ -85,28 +83,27 @@ while read line; do
 	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
 	ciop-log "INFO" "Final Master Date: $master_date"
 		
-#	fi
+	fi
 
-#	if [ ! -e "${TMPDIR}/DEM/final_dem.dem" ]; then
+	if [ ! -e "${TMPDIR}/DEM/final_dem.dem" ]; then
 
 	ciop-log "INFO" "Retrieving DEM folder"
 	ciop-copy -O ${TMPDIR} ${dem}
 	[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
-	}
+
+	fi
 	
 	ciop-log "INFO" "Retrieving SLC folder"
 	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${insar_slaves}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVE_RETRIEVE}
 
-[ ${first} == "TRUE" ] && {
+
 	ciop-log "INFO" "Georeferencing image stack"
  	first_folder=`ls -d -1 2*/`
 	cd ${PROCESS}/INSAR_${master_date}/$first_folder
 	step_geo 
 	[ $? -ne 0 ] && return ${ERR_STEP_GEO}
-    	}
 
-	first=FALSE	
 done
 
 ciop-log "INFO" "running mt_prep to load dta ino matlab variables"
