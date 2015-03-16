@@ -112,6 +112,7 @@ while read line; do
 		cd ${sensing_date}
 		
 		# 	link to SLC folder
+		rm -rf SLC
 		ln -s ${SLC}/${sensing_date} SLC
 
 		# 	get the master and slave doris result files
@@ -182,7 +183,7 @@ while read line; do
 		cd ${PROCESS}/INSAR_${master_date}
         	ciop-log "INFO" "create tar for INSAR SLave folder"
     #    	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}
-        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cintminrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log  
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cint.minrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log  
         	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}  #${sensing_date}/ref_dem1l.raw 
 
 
