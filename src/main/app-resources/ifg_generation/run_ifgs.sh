@@ -193,6 +193,8 @@ while read line; do
 		echo "${insar_master},${insar_slaves},${dem}" | ciop-publish -s	
 		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
+		echo "${insar_master},${insar_slaves},${dem}" >> $TMPDIR/output.list
+		
 	fi 
 done
 

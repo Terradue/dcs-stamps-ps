@@ -91,17 +91,19 @@ while read line; do
 
 	fi
 	
+	sensing_date_gz=`basename $insar_slavess`
+	sensing_date=${sensing_date_gz:-4}
 	ciop-log "INFO" "Retrieving SLC folder"
 	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${insar_slaves}
 	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVE_RETRIEVE}
 
-
+	if [ ! -e "${PROCESS}/INSAR_${master_date}/lat.raw" ]; then
+	cd ${PROCESS}/INSAR_${master_date}/
 	ciop-log "INFO" "Georeferencing image stack"
- 	first_folder=`ls -d -1 2*/`
-	cd ${PROCESS}/INSAR_${master_date}/$first_folder
+	cd ${sensing_date}
 	step_geo 
 	[ $? -ne 0 ] && return ${ERR_STEP_GEO}
-
+	fi
 done
 
 ciop-log "INFO" "running mt_prep to load dta ino matlab variables"
