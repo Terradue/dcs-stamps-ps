@@ -182,7 +182,7 @@ while read line; do
 
 		cd ${PROCESS}/INSAR_${master_date}
         	ciop-log "INFO" "create tar for INSAR SLave folder"
-        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cint.minrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log  
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cint.minrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log  ${sensing_date}/*.dorisin
         	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}  #${sensing_date}/ref_dem1l.raw 
 
 		ciop-log "INFO" "Publish -a insar_slaves"

@@ -187,6 +187,8 @@ for slcs in `cat ${TMPDIR}/slc_folders.tmp`; do
 	ciop-log "INFO" "Will publish the final output"
 	echo "${insar_master},${slcs},${dem}" | ciop-publish -s	
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+
+	echo "${insar_master},${slcs},${dem}" >> ${TMPDIR}/output.list
 done
 
 
