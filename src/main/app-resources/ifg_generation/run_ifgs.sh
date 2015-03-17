@@ -66,8 +66,12 @@ master_date=""
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
-        IFS=',' read -r insar_master slc_folders dem <<< "$line"
-	ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
+
+        insar_master=`echo "$line" | cut -d "," -f 1`
+        slc_folders=`echo "$line" | cut -d "," -f 2`
+        dem=`echo "$line" | cut -d "," -f 3`
+
+        ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
 
 	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
 	
@@ -140,23 +144,65 @@ while read line; do
 		ciop-log "INFO" "doris exited with $res"
 		[ $res -ne 0 ] && return ${ERR_STEP_COARSE}
 	
-		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calcultion of overall offset
-		#offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
-		#offsetP=`more coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calculation of overall offset
+		offsetL=`cat coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		offsetP=`cat coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
 
 		# 	write the lines with the new overall offset into variable	 
-		#replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
-		#replaceP=`echo -e "Coarse_correlation_translation_pixels: \t" $offsetP`	
+		replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
+		replaceP=`echo -e "Coarse_correlation_translation_pixels: \t" $offsetP`	
 
 		# 	replace full line of overall offset
-		#sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
-		#sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
+		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
+		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
 		
 		ciop-log "INFO" "fine image correlation for ${sensing_date}"
 		step_coreg_simple
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
-	fi
+	
+		# prepare dem.dorisin with right dem path
+		if [ ! -e ${PROCESS}/INSAR_${master_date}/dem.dorisin ]; then
+			    sed -n '1,/step comprefdem/p' $DORIS_SCR/dem.dorisin > ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "# CRD_METHOD      trilinear" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    grep "SAM_IN" ${PROCESS}/INSAR_${master_date}/timing.dorisin | sed 's/SAM/CRD/' >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
+			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+
+			    sed -i "s|CRD_IN_DEM.*|CRD_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    sed -i "s|SAM_IN_DEM.*|SAM_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/timing.dorisin
+		fi
+
+		ciop-log "INFO" "simulating amplitude for ${sensing_date}"
+		step_dem
+		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
+
+		ciop-log "INFO" "resampling ${sensing_date}"
+		step_resample
+		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
+
+		ciop-log "INFO" "IFG generation for ${sensing_date}"
+		step_ifg
+		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
+
+		cd ${PROCESS}/INSAR_${master_date}
+        	ciop-log "INFO" "create tar for INSAR SLave folder"
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cint.minrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log ${sensing_date}/*.dorisin
+        	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}  #${sensing_date}/ref_dem1l.raw 
+
+		ciop-log "INFO" "Publish -a insar_slaves"
+		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
+		[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_PUBLISH}
+		
+		ciop-log "INFO" "Will publish the final output"
+		echo "${insar_master},${insar_slaves},${dem}" | ciop-publish -s	
+		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+
+		echo "${insar_master},${insar_slaves},${dem}" >> $TMPDIR/output.list
+		
+	fi 
 done
 
 }
