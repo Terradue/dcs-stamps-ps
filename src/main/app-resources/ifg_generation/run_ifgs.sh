@@ -147,14 +147,6 @@ while read line; do
 		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
 		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
 
-		######################################
-		######check for CPM size##############
-		######################################
-	
-		ciop-log "INFO" "fine image correlation for ${sensing_date}"
-		step_coreg_simple
-		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
-
 	fi
 done
 
