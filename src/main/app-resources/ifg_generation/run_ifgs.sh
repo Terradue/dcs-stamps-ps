@@ -155,32 +155,6 @@ while read line; do
 		step_coreg_simple
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
-		# prepare dem.dorisin with right dem path
-		if [ ! -e ${PROCESS}/INSAR_${master_date}/dem.dorisin ]; then
-	
-			    sed -n '1,/step comprefdem/p' $DORIS_SCR/dem.dorisin > ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    echo "# CRD_METHOD      trilinear" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    grep "SAM_IN" ${PROCESS}/INSAR_${master_date}/timing.dorisin | sed 's/SAM/CRD/' >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
-			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
-
-			    sed -i "s|CRD_IN_DEM.*|CRD_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/dem.dorisin
-			    sed -i "s|SAM_IN_DEM.*|SAM_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/timing.dorisin
-		fi
-
-		ciop-log "INFO" "simulating amplitude for ${sensing_date}"
-		step_dem
-		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
-
-		ciop-log "INFO" "resampling ${sensing_date}"
-		step_resample
-		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
-
-		ciop-log "INFO" "IFG generation for ${sensing_date}"
-		step_ifg
-		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
 	fi
 done
 
