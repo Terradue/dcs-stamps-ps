@@ -136,16 +136,16 @@ while read line; do
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 	
 		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calcultion of overall offset
-		offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
-		offsetP=`more coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		#offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		#offsetP=`more coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
 
 		# 	write the lines with the new overall offset into variable	 
-		replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
-		replaceP=`echo -e "Coarse_correlation_translation_pixels: \t" $offsetP`	
+		#replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
+		#replaceP=`echo -e "Coarse_correlation_translation_pixels: \t" $offsetP`	
 
 		# 	replace full line of overall offset
-		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
-		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
+		#sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
+		#sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
 
 	fi
 done
