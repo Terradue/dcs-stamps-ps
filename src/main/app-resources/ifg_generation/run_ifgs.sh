@@ -135,6 +135,52 @@ while read line; do
 		doris coarse.dorisin > step_coarse.log
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 	
+		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calcultion of overall offset
+		offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		offsetP=`more coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+
+		# 	write the lines with the new overall offset into variable	 
+		replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
+		replaceP=`echo -e "Coarse_correlation_translation_pixels: \t" $offsetP`	
+
+		# 	replace full line of overall offset
+		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
+		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
+
+		######################################
+		######check for CPM size##############
+		######################################
+	
+		ciop-log "INFO" "fine image correlation for ${sensing_date}"
+		step_coreg_simple
+		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
+
+		# prepare dem.dorisin with right dem path
+		if [ ! -e ${PROCESS}/INSAR_${master_date}/dem.dorisin ]; then
+	
+			    sed -n '1,/step comprefdem/p' $DORIS_SCR/dem.dorisin > ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "# CRD_METHOD      trilinear" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    grep "SAM_IN" ${PROCESS}/INSAR_${master_date}/timing.dorisin | sed 's/SAM/CRD/' >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
+			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+
+			    sed -i "s|CRD_IN_DEM.*|CRD_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    sed -i "s|SAM_IN_DEM.*|SAM_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/timing.dorisin
+		fi
+
+		ciop-log "INFO" "simulating amplitude for ${sensing_date}"
+		step_dem
+		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
+
+		ciop-log "INFO" "resampling ${sensing_date}"
+		step_resample
+		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
+
+		ciop-log "INFO" "IFG generation for ${sensing_date}"
+		step_ifg
+		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
 	fi
 done
 
