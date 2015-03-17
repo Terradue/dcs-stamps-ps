@@ -113,7 +113,7 @@ done
 
 ciop-log "INFO" "running mt_prep to load dta ino matlab variables"
 cd ${PROCESS}/INSAR_${master_date}/
-$INSARDIR="${PROCESS}/INSAR_${master_date}/"
+INSARDIR="${PROCESS}/INSAR_${master_date}/"
 
 # taken from mt_extract_info and rewritten (since mt_extract_info won' find dem.dorisin)
 grep SAM_IN_DEM $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_DEM") print $2}' > demparms.in 
@@ -139,7 +139,7 @@ while read line; do
 done < patch_size.txt
 
 ciop-log "INFO" "Running Stamps step 1"
-/opt/StaMPS_v3.3b1/matlab/stamps $MCR 1 1
+/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 1 1
 [ $? -ne 0 ] && return ${ERR_STAMPS_1}
 
 ciop-log "INFO" "creating tar for InSAR Master folder"
