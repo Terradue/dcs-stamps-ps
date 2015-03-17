@@ -82,9 +82,9 @@ while read line; do
 
 	if [ ! -e "${TMPDIR}/DEM/final_dem.dem" ]; then
 
-		ciop-log "INFO" "Retrieving DEM folder"
-		ciop-copy -O ${TMPDIR} ${dem}
-		[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
+	ciop-log "INFO" "Retrieving DEM folder"
+	ciop-copy -O ${TMPDIR} ${dem}
+	[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
 
 	fi
 
@@ -134,7 +134,7 @@ while read line; do
 		ciop-log "INFO" "coarse image correlation for ${sensing_date}"
 		doris coarse.dorisin > step_coarse.log
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
-	
+
 		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calcultion of overall offset
 		offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
 		offsetP=`more coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
@@ -147,7 +147,56 @@ while read line; do
 		sed -i "s/Coarse_correlation_translation_lines:.*/$replaceL/" coreg.out
 		sed -i "s/Coarse_correlation_translation_pixels:.*/$replaceP/" coreg.out
 
-	fi
+		######################################
+		######check for CPM size##############
+		######################################
+	
+		ciop-log "INFO" "fine image correlation for ${sensing_date}"
+		step_coreg_simple
+		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
+
+		# prepare dem.dorisin with right dem path
+		if [ ! -e ${PROCESS}/INSAR_${master_date}/dem.dorisin ]; then
+			    sed -n '1,/step comprefdem/p' $DORIS_SCR/dem.dorisin > ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "# CRD_METHOD      trilinear" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_INCLUDE_FE  OFF" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_FILE    refdem_1l.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    echo "CRD_OUT_DEM_LP  dem_radar.raw" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    grep "SAM_IN" ${PROCESS}/INSAR_${master_date}/timing.dorisin | sed 's/SAM/CRD/' >> ${PROCESS}/INSAR_${master_date}/dem.dorisin	    
+			    echo "STOP" >> ${PROCESS}/INSAR_${master_date}/dem.dorisin
+
+			    sed -i "s|CRD_IN_DEM.*|CRD_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/dem.dorisin
+			    sed -i "s|SAM_IN_DEM.*|SAM_IN_DEM ${TMPDIR}/DEM/final_dem.dem|" ${PROCESS}/INSAR_${master_date}/timing.dorisin
+		fi
+
+		ciop-log "INFO" "simulating amplitude for ${sensing_date}"
+		step_dem
+		[ $? -ne 0 ] && return ${ERR_STEP_DEM}
+
+		ciop-log "INFO" "resampling ${sensing_date}"
+		step_resample
+		[ $? -ne 0 ] && return ${ERR_STEP_RESAMPLE}
+
+		ciop-log "INFO" "IFG generation for ${sensing_date}"
+		step_ifg
+		[ $? -ne 0 ] && return ${ERR_STEP_IFG}
+
+		cd ${PROCESS}/INSAR_${master_date}
+        	ciop-log "INFO" "create tar for INSAR SLave folder"
+        	tar cvfz INSAR_${sensing_date}.tgz ${sensing_date}/slave_res.slc ${sensing_date}/cint.minrefdem.raw ${sensing_date}/dem_radar.raw ${sensing_date}/*.out ${sensing_date}/*.res ${sensing_date}/*.log ${sensing_date}/*.dorisin
+        	[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_TAR}  #${sensing_date}/ref_dem1l.raw 
+
+		ciop-log "INFO" "Publish -a insar_slaves"
+		insar_slaves="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${sensing_date}.tgz )"
+		[ $? -ne 0 ] && return ${ERR_INSAR_SLAVES_PUBLISH}
+		
+		ciop-log "INFO" "Will publish the final output"
+		echo "${insar_master},${insar_slaves},${dem}" | ciop-publish -s	
+		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+
+		echo "${insar_master},${insar_slaves},${dem}" >> $TMPDIR/output.list
+		
+	fi 
 done
 
 }
