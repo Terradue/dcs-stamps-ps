@@ -66,7 +66,36 @@ master_date=""
 while read line; do
 
 	ciop-log "INFO" "Processing input: $line"
-        
+        IFS=',' read -r insar_master slc_folders dem <<< "$line"
+	ciop-log "DEBUG" "1:$insar_master 2:$slc_folders 3:$dem"
+
+	if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
+	
+		ciop-log "INFO" "Retrieving Master folder"
+		ciop-copy -O ${PROCESS} ${insar_master}
+		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
+		
+		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
+		ciop-log "INFO" "Final Master Date: $master_date"
+		
+	fi
+
+	if [ ! -e "${TMPDIR}/DEM/final_dem.dem" ]; then
+
+		ciop-log "INFO" "Retrieving DEM folder"
+		ciop-copy -O ${TMPDIR} ${dem}
+		[ $? -ne 0 ] && return ${ERR_DEM_RETRIEVE}
+
+	fi
+
+	ciop-log "INFO" "Retrieving SLC folder"
+	ciop-copy -O ${SLC} ${slc_folders}
+	[ $? -ne 0 ] && return ${ERR_SLC_RETRIEVE}
+	
+	# 	get sensing date
+	sensing_date=`basename ${slc_folders} | cut -c 1-8`
+	ciop-log "INFO" "Processing scene from $sensing_date"
+	
 done
 
 }
