@@ -96,6 +96,46 @@ while read line; do
 	sensing_date=`basename ${slc_folders} | cut -c 1-8`
 	ciop-log "INFO" "Processing scene from $sensing_date"
 	
+	# 	Process all slaves
+	if [ $sensing_date != $master_date ];then
+		
+		# 	go to master folder
+		cd ${PROCESS}/INSAR_${master_date}
+
+		# 	adjust the original file paths for the current node	       
+		sed -i "61s|Data_output_file:.*|Data_output_file:\t${PROCESS}/INSAR_${master_date}/${master_date}\_crop.slc|" master.res
+		sed -i "s|DEM source file:.*|DEM source file:\t	${TMPDIR}/DEM/final_dem.dem|" master.res     
+		sed -i "s|MASTER RESULTFILE:.*|MASTER RESULTFILE:\t${PROCESS}/INSAR_${master_date}/master.res|" master.res
+		
+		# 	create slave folder and change to it
+		rm -rf ${sensing_date}	# in case of same master as premaster
+		mkdir -p ${sensing_date}
+		cd ${sensing_date}
+		
+		# 	link to SLC folder
+		rm -rf SLC
+		ln -s ${SLC}/${sensing_date} SLC
+
+		# 	get the master and slave doris result files
+		cp -f SLC/slave.res  .
+		cp -f ../master.res .
+
+		# 	adjust paths for current node		
+		sed -i "s|Data_output_file:.*|Data_output_file:  $SLC/${sensing_date}/${sensing_date}.slc|" slave.res
+		sed -i "s|SLAVE RESULTFILE:.*|SLAVE RESULTFILE:\t$SLC/${sensing_date}/slave.res|" slave.res            	
+
+		# 	copy Stamps version of coarse.dorisin into slave folder
+		cp $DORIS_SCR/coarse.dorisin .
+		rm -f coreg.out
+	
+		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
+		sed -i 's/CC_NWIN.*/CC_NWIN         200/' coarse.dorisin  
+		
+		ciop-log "INFO" "coarse image correlation for ${sensing_date}"
+		doris coarse.dorisin > step_coarse.log
+		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+	
+	fi
 done
 
 }
