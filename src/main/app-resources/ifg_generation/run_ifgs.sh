@@ -1,6 +1,6 @@
 #! /bin/bash
 mode=$1
-#set -x 
+set -x 
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
@@ -131,9 +131,14 @@ while read line; do
 		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
 		sed -i 's/CC_NWIN.*/CC_NWIN         200/' coarse.dorisin  
 		
-		ciop-log "INFO" "coarse image correlation for ${sensing_date}"
+		#ciop-log "INFO" "coarse image correlation for ${sensing_date}"
+		#doris coarse.dorisin > step_coarse.log
+		#[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+
 		doris coarse.dorisin > step_coarse.log
-		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
+		res=$?
+		ciop-log "INFO" "doris exited with $res"
+		[ $res -ne 0 ] && return ${ERR_STEP_COARSE}
 	
 		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calcultion of overall offset
 		offsetL=`more coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
