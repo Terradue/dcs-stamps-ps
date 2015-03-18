@@ -111,18 +111,18 @@ done
 
 
 
-ciop-log "INFO" "running mt_prep to load dta ino matlab variables"
+ciop-log "INFO" "running mt_prep to load data into matlab variables"
 cd ${PROCESS}/INSAR_${master_date}/
-INSARDIR="${PROCESS}/INSAR_${master_date}/"
+INSARDIR="${PROCESS}/INSAR_${master_date}"
 
 # taken from mt_extract_info and rewritten (since mt_extract_info won' find dem.dorisin)
-grep SAM_IN_DEM $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_DEM") print $2}' > demparms.in 
-grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_SIZE") print $3}' >> demparms.in 
-grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_SIZE") print $2}' >> demparms.in 
-grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_UL") print $3}' >> demparms.in 
-grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_UL") print $2}' >> demparms.in 
-grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_DELTA") print $2}' >> demparms.in 
-grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="CRD_IN_FORMAT") print $2}' >> demparms.in 
+grep SAM_IN_DEM $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DEM") print $2}' > demparms.in 
+grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_SIZE") print $3}' >> demparms.in 
+grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_SIZE") print $2}' >> demparms.in 
+grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $3}' >> demparms.in 
+grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $2}' >> demparms.in 
+grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DELTA") print $2}' >> demparms.in 
+grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_FORMAT") print $2}' >> demparms.in 
 
 mt_prep 0.42 4 5 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
