@@ -116,13 +116,13 @@ cd ${PROCESS}/INSAR_${master_date}/
 INSARDIR="${PROCESS}/INSAR_${master_date}"
 
 # taken from mt_extract_info and rewritten (since mt_extract_info won' find dem.dorisin)
-grep SAM_IN_DEM $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DEM") print $2}' > demparms.in 
-grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_SIZE") print $3}' >> demparms.in 
-grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_SIZE") print $2}' >> demparms.in 
-grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $3}' >> demparms.in 
-grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $2}' >> demparms.in 
-grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DELTA") print $2}' >> demparms.in 
-grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_FORMAT") print $2}' >> demparms.in 
+grep SAM_IN_DEM $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DEM") print $2}' > $INSARDIR/demparms.in 
+grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_SIZE") print $3}' >> $INSARDIR/demparms.in 
+grep SAM_IN_SIZE $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_SIZE") print $2}' >> $INSARDIR/demparms.in 
+grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $3}' >> $INSARDIR/demparms.in 
+grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $2}' >> $INSARDIR/demparms.in 
+grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DELTA") print $2}' >> $INSARDIR/demparms.in 
+grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_FORMAT") print $2}' >> $INSARDIR/demparms.in 
 
 mt_prep 0.42 4 5 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
@@ -143,7 +143,7 @@ ciop-log "INFO" "Running Stamps step 1"
 [ $? -ne 0 ] && return ${ERR_STAMPS_1}
 
 ciop-log "INFO" "creating tar for InSAR Master folder"
-tar cvfz INSAR_${master_date}.tgz *.txt *.out *.res *.in *.m *.mat patch.list
+tar cvfz INSAR_${master_date}.tgz *.txt *.out *.res *.in *.mat patch.list
 [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 ciop-log "INFO" "publishing InSAR Master folder"
