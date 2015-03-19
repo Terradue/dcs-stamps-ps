@@ -128,15 +128,15 @@ mt_prep 0.42 4 5 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
 
 # Check for size of pscands.1.da to see if enough PS are contained
-rm patch.list
-ls -1 -s */pscands.1.da > patch_size.txt
-while read line; do
- 	PATCH_SIZE=`echo $line | awk $'{print $ 1}'`
-	if [[ "${PATCH_SIZE}" -gt "100" ]] ; then
-		VALID_PATCHES=`echo $line | awk $'{print $2}' | awk -F '/' $'{print $1}'`
-		echo $VALID_PATCHES >> patch.list
-	fi
-done < patch_size.txt
+#rm patch.list
+#ls -1 -s */pscands.1.da > patch_size.txt
+#while read line; do
+# 	PATCH_SIZE=`echo $line | awk $'{print $ 1}'`
+#	if [[ "${PATCH_SIZE}" -gt "100" ]] ; then
+#		VALID_PATCHES=`echo $line | awk $'{print $2}' | awk -F '/' $'{print $1}'`
+#		echo $VALID_PATCHES >> patch.list
+#	fi
+#done < patch_size.txt
 
 ciop-log "INFO" "Running Stamps step 1"
 /opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 1 1
