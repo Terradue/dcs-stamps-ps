@@ -64,7 +64,7 @@ trap cleanExit EXIT
 main() {
 local res
 #	master_date=""
-first=TRUE
+master_date=""
 
 
 while read line; do
@@ -73,22 +73,23 @@ while read line; do
         IFS=',' read -r insar_master patches <<< "$line"
 	ciop-log "DEBUG" "1:$insar_master 2:$patches"
 
-	[ ${first} == "TRUE" ] && {
-     
-	ciop-log "INFO" "Retrieving Master folder"
-	ciop-copy -O ${PROCESS} ${insar_master}
-	[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
+	
+        if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
+	
+		ciop-log "INFO" "Retrieving Master folder"
+		ciop-copy -O ${PROCESS} ${insar_master}
+		[ $? - ne 0 ] && return ${ERR_MASTER_RETRIEVE}
 		
-	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
-	ciop-log "INFO" "Final Master Date: $master_date"
-	{
-
+		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
+		ciop-log "INFO" "Final Master Date: $master_date"
+	
+	fi
+	
 	ciop-log "INFO" "Retrieving PATCH folder"
 	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${patches}
 	[ $? -ne 0 ] && return ${ERR_PATCH_RETRIEVE}
 
-	patch_gz=`basename $line`
-	patch=${patch_gz:-4}
+	patch=`basename $line` | rev | cut -c 5- | rev
 	ciop-log "INFO" "Processing $patch (estimating phase noise. may take a while...)"
 	
 	cd $patch
@@ -100,9 +101,9 @@ while read line; do
 	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 3 3
 	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
 
-	ciop-log "INFO" "StaMPS step 4: PS Weeding (should go faster)"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 4 4
-	[ $? -ne 0 ] && return ${ERR_STAMPS_4}
+	#ciop-log "INFO" "StaMPS step 4: PS Weeding (should go faster)"
+	#/opt/StaMPS_v3.3b1/matlab/stamps $MCR 4 4
+	#[ $? -ne 0 ] && return ${ERR_STAMPS_4}
 
 	cd ../../
 
