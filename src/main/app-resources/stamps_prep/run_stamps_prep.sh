@@ -143,11 +143,19 @@ ciop-log "INFO" "Running Stamps step 1"
 [ $? -ne 0 ] && return ${ERR_STAMPS_1}
 
 ciop-log "INFO" "creating tar for InSAR Master folder"
-tar cvfz INSAR_${master_date}.tgz *.txt *.out *.res *.in *.mat patch.list
+mkdir INSAR_${master_date}/
+mv *.txt INSAR_${master_date}/
+mv *.out INSAR_${master_date}/
+mv *.res INSAR_${master_date}/
+mv *.in INSAR_${master_date}/
+mv *.mat INSAR_${master_date}/
+mv patch.list INSAR_${master_date}/
+
+tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
 [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 ciop-log "INFO" "publishing InSAR Master folder"
-insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )"
+insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/INSAR_${master_date}.tgz )"
 [ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
 while read line; do
