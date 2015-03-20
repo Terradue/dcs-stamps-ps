@@ -93,7 +93,7 @@ while read line; do
 	patch=`basename ${patches} | rev | cut -c 5- | rev`
 	ciop-log "INFO" "Processing $patch"
 	
-	cd $patch
+	cd ${PROCESS}/INSAR_${master_date}/$patch
 	ciop-log "INFO" "StaMPS step 2: Estimate Phase noise (may take while...)"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 2 2
 	[ $? -ne 0 ] && return ${ERR_STAMPS_2}
