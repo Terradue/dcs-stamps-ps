@@ -173,7 +173,7 @@ while read line; do
 	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
 
-<done < INSAR_${master_date}/patch.list
+done < INSAR_${master_date}/patch.list
 
 }
 cat | main
