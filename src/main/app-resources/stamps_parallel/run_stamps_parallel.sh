@@ -89,31 +89,32 @@ while read line; do
 	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${patches}
 	[ $? -ne 0 ] && return ${ERR_PATCH_RETRIEVE}
 
+	ciop-log "INFO" "Input directoy patches: $patches"
 	patch=`basename ${patches}` | rev | cut -c 5- | rev
 	ciop-log "INFO" "Processing $patch"
 	
-	cd $patch
-	ciop-log "INFO" "StaMPS step 2: Estimate Phase noise (may take while...)"
-	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 2 2
-	[ $? -ne 0 ] && return ${ERR_STAMPS_2}
+#	cd $patch
+#	ciop-log "INFO" "StaMPS step 2: Estimate Phase noise (may take while...)"
+#	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 2 2
+#	[ $? -ne 0 ] && return ${ERR_STAMPS_2}
 
-	ciop-log "INFO" "StaMPS step 3: PS Selection (may take while...)"
-	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 3 3
-	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
+#	ciop-log "INFO" "StaMPS step 3: PS Selection (may take while...)"
+#	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 3 3
+#	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
 
 	#ciop-log "INFO" "StaMPS step 4: PS Weeding (should go faster)"
 	#/opt/StaMPS_v3.3b1/matlab/stamps $MCR 4 4
 	#[ $? -ne 0 ] && return ${ERR_STAMPS_4}
 
-	cd ../../
+#	cd ../../
 
-	ciop-log "INFO" "creating tar for InSAR Master folder"
-	tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
-	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+#	ciop-log "INFO" "creating tar for InSAR Master folder"
+#	tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
+#	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-	ciop-log "INFO" "publishing InSAR Master folder"
-	ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
-	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+#	ciop-log "INFO" "publishing InSAR Master folder"
+#	ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
+#	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 done
 
 }
