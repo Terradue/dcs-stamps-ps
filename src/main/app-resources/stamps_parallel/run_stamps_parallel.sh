@@ -101,10 +101,17 @@ while read line; do
 	ciop-log "INFO" "StaMPS step 3: PS Selection (may take while...)"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 3 3
 	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
-
-	#ciop-log "INFO" "StaMPS step 4: PS Weeding (should go faster)"
-	#/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4
+	
+	ciop-log "INFO" "StaMPS step 4: PS Weeding"
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 > check_weeding.log
 	#[ $? -ne 0 ] && return ${ERR_STAMPS_4}
+	#matlab -nodisplay -nodesktop -nosplash -r "try, stamps(4,4), catch, exit, end, exit" > check_weeding
+	grep "Error" check_weeding > tmp
+
+	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]] ; then
+		echo $line >> ../new.patch.list
+	fi
+	rm tmp
 
 	cd ../../
 
