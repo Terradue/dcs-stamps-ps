@@ -103,7 +103,7 @@ while read line; do
 	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
 
 	#ciop-log "INFO" "StaMPS step 4: PS Weeding (should go faster)"
-	#/opt/StaMPS_v3.3b1/matlab/stamps $MCR 4 4
+	#/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4
 	#[ $? -ne 0 ] && return ${ERR_STAMPS_4}
 
 	cd ../../
