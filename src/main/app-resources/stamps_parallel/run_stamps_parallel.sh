@@ -94,11 +94,11 @@ while read line; do
 	
 	cd $patch
 	ciop-log "INFO" "StaMPS step 2: Estimate Phase noise (may take while...)"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 2 2
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 2 2
 	[ $? -ne 0 ] && return ${ERR_STAMPS_2}
 
 	ciop-log "INFO" "StaMPS step 3: PS Selection (may take while...)"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 3 3
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 3 3
 	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
 
 	#ciop-log "INFO" "StaMPS step 4: PS Weeding (should go faster)"
