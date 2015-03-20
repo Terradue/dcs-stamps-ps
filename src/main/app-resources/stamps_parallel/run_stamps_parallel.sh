@@ -89,8 +89,8 @@ while read line; do
 	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${patches}
 	[ $? -ne 0 ] && return ${ERR_PATCH_RETRIEVE}
 
-	patch=`basename $line` | rev | cut -c 5- | rev
-	ciop-log "INFO" "Processing $patch (estimating phase noise. may take a while...)"
+	patch=`basename ${patches}` | rev | cut -c 5- | rev
+	ciop-log "INFO" "Processing $patch"
 	
 	cd $patch
 	ciop-log "INFO" "StaMPS step 2: Estimate Phase noise (may take while...)"
