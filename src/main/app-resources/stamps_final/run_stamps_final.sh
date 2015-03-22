@@ -90,7 +90,7 @@ while read line; do
 done
 	
 	cd ${PROCESS}/INSAR_${master_date}
-	ciop-log "INFO" "StaMPS step 5: Phase Correction"
+	ciop-log "INFO" "StaMPS step 5: Phase Correction and merge of patches"
 	#/opt/StaMPS_v3.3b1/matlab/stamps $MCR 5 5
 	#[ $? -ne 0 ] && return ${ERR_STAMPS_5}
 
