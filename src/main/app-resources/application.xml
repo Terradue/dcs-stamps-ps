@@ -111,7 +111,7 @@
       <node id="node_stamps_final">
         <job id="stamps_final" />
           <sources>
-          <source refid="wf:node">node_parallel</source>
+          <source refid="wf:node">node_stamps_parallel</source>
           </sources>
           <parameters/>
       </node>

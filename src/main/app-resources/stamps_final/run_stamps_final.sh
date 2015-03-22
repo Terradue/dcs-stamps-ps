@@ -74,6 +74,8 @@ while read line; do
 
 	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
 	ciop-log "INFO" "Final Master Date: $master_date"
+
+done
 	
 	cd ${PROCESS}/INSAR_${master_date}
 	ciop-log "INFO" "StaMPS step 5: Phase Correction"
@@ -136,7 +138,7 @@ while read line; do
 #	ciop-publish ${PROCESS}/GIS_${master_date}.tgz
 	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
- done
+
 
 
 }
