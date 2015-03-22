@@ -78,7 +78,7 @@ while read line; do
 	
 		ciop-log "INFO" "Retrieving Master folder"
 		ciop-copy -O ${PROCESS} ${insar_master}
-		[ $? - ne 0 ] && return ${ERR_MASTER_RETRIEVE}
+		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}		
 		
 		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
 		ciop-log "INFO" "Final Master Date: $master_date"

@@ -56,6 +56,13 @@
         <property id="mapred.task.timeout">9900000000</property>
         </defaultJobconf>
     </jobTemplate>
+<jobTemplate id="stamps_final">
+      <streamingExecutable>/application/stamps_final/run_stamps_final.sh</streamingExecutable>
+	<defaultJobconf>
+	<property id="ciop.job.max.tasks">1</property>
+        <property id="mapred.task.timeout">9900000000</property>
+        </defaultJobconf>
+  </jobTemplate>
   </jobTemplates>
   <workflow id="dcs-stamps-ps" title="StaMPS" abstract="StaMPS">
     <workflowVersion>1.0</workflowVersion>
@@ -98,6 +105,13 @@
         <job id="stamps_parallel" />
           <sources>
           <source refid="wf:node">node_stamps_prep</source>
+          </sources>
+          <parameters/>
+      </node>
+      <node id="node_stamps_final">
+        <job id="stamps_final" />
+          <sources>
+          <source refid="wf:node">node_parallel</source>
           </sources>
           <parameters/>
       </node>
