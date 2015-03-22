@@ -69,7 +69,7 @@ while read line; do
 
 	ciop-log "INFO" "Input $line"
 	ciop-log "INFO" "Retrieving Master folder"
-	ciop-copy -O ${PROCESS} ${line}
+	ciop-copy -o ${PROCESS} ${line}
 	[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}
 
 	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
