@@ -92,24 +92,24 @@ done
 	cd ${PROCESS}/INSAR_${master_date}
 
 	ciop-log "INFO" "StaMPS step 4: PS Weeding"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 4 4
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4
 	[ $? -ne 0 ] && return ${ERR_STAMPS_5}
 
 	ciop-log "INFO" "StaMPS step 5: Phase correctiona and merge of patches"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 5 5
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 5 5
 	[ $? -ne 0 ] && return ${ERR_STAMPS_5}
 
 
 	ciop-log "INFO" "StaMPS step 6: PS unwrapping"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 6 6
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 6 6
 	[ $? -ne 0 ] && return ${ERR_STAMPS_6}
 
 	ciop-log "INFO" "StaMPS step 7: Estimation of SCLA"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 7 7
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 7 7
 	[ $? -ne 0 ] && return ${ERR_STAMPS_7}
 
 	ciop-log "INFO" "StaMPS step 8: Spatio-temporal Filtering"
-	/opt/StaMPS_v3.3b1/matlab/stamps $MCR 8 8
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 8 8
 	[ $? -ne 0 ] && return ${ERR_STAMPS_8}
 
 
