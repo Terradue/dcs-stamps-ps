@@ -32,6 +32,9 @@ ERR_INSAR_SLAVE_RETRIEVE=11
 ERR_STEP_GEO=13
 ERR_MT_PREP=15
 ERR_STAMPS_1=17
+ERR_DENS_PARM=18
+ERR_WEED_PARM=20
+ERR_SCLA_PARM=22
 ERR_INSAR_TAR=19
 ERR_INSAR_PUBLISH=21
 ERR_PATCH_TAR=23
@@ -51,6 +54,9 @@ ${ERR_INSAR_SLAVE_RETRIEVE}) msg="Failed to tar Insar Slave folder";;
 ${ERR_STEP_GEO}) msg="Failed to geoference the image stack";; 
 ${ERR_MT_PREP}) msg="Failed to run mt_prep routine";;
 ${ERR_STAMPS_1}) msg="Failed to process step 1 of StaMPS";;
+${ERR_DENS_PARM}) msg="Failed to set parameter density rand to 5";;
+${ERR_WEED_PARM}) msg="Failed to set parameter weed zro elevation to 'y' to 5";;
+${ERR_SCLA_PARM}) msg="Failed to set parameter scla_deramp to 'y'";;
 ${ERR_INSAR_TAR}) msg="Failed to tar Insar Slave folder";;
 ${ERR_INSAR_PUBLISH}) msg="Failed to publish Insar Slave folder";;
 ${ERR_PATCH_TAR}) msg="Failed to tar Insar Slave folder";;
@@ -139,9 +145,23 @@ mt_prep 0.42 1 2 50 200
 #	fi
 #done < patch_size.txt
 
+
 ciop-log "INFO" "Running Stamps step 1"
 /opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 1 1
 [ $? -ne 0 ] && return ${ERR_STAMPS_1}
+
+ciop-log "INFO" "Set Density Rand to 5"
+/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR density_rand 5
+[ $? -ne 0 ] && return ${ERR_DENS_PARM}
+
+ciop-log "INFO" "Set Weed_zero_elevation to yes"
+/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR weed_zero "'y'"
+[ $? -ne 0 ] && return ${ERR_WEED_PARM}
+
+ciop-log "INFO" "Set deramping to yes"
+/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "'y'"
+[ $? -ne 0 ] && return ${ERR_SCLA_PARM}
+
 
 ciop-log "INFO" "creating tar for InSAR Master folder"
 mkdir INSAR_${master_date}/

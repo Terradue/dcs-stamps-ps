@@ -23,9 +23,9 @@ MCR="/usr/local/MATLAB/MATLAB_Compiler_Runtime/v717"
 # define the exit codes
 SUCCESS=0
 ERR_MASTER_RETRIEVE=7
-ERR_PATCH_RETRIEVE=7
-ERR_STAMPS_2=17
-ERR_STAMPS_3=17
+ERR_PATCH_RETRIEVE=9
+ERR_STAMPS_2=13
+ERR_STAMPS_3=15
 ERR_STAMPS_4=17
 ERR_PATCH_TAR=23
 ERR_PATCH_PUBLISH=25
@@ -42,9 +42,9 @@ case "${retval}" in
 ${SUCCESS}) msg="Processing successfully concluded";;
 ${ERR_MASTER_RETRIEVE}) msg="Failed to retrieve Master folder";;
 ${ERR_PATCH_RETRIEVE}) msg="Failed to retrieve the PATCH folder";;
-${ERR_STAMPS_2}) msg="Failed to process step 1 of StaMPS";;
-${ERR_STAMPS_3}) msg="Failed to process step 1 of StaMPS";;
-${ERR_STAMPS_4}) msg="Failed to process step 1 of StaMPS";;
+${ERR_STAMPS_2}) msg="Failed to process step 2 of StaMPS";;
+${ERR_STAMPS_3}) msg="Failed to process step 3 of StaMPS";;
+${ERR_STAMPS_4}) msg="Failed to process step 4 of StaMPS";;
 ${ERR_PATCH_TAR}) msg="Failed to tar Insar Slave folder";;
 ${ERR_PATCH_PUBLISH}) msg="Failed to publish Insar Slave folder";;
 ${ERR_INSAR_TAR}) msg="Failed to tar Insar Slave folder";;
@@ -100,43 +100,40 @@ while read line; do
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 3 3
 	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
 	
-	#ciop-log "INFO" "StaMPS step 4: PS Weeding"
-	#/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 > check_weeding.log
-	#[ $? -ne 0 ] && return ${ERR_STAMPS_4}
-	#matlab -nodisplay -nodesktop -nosplash -r "try, stamps(4,4), catch, exit, end, exit" > check_weeding
-	#grep "Error" check_weeding > tmp
+	ciop-log "INFO" "StaMPS step 4: PS Weeding"
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 > check_weeding.log
+	[ $? -ne 0 ] && return ${ERR_STAMPS_4}
+	grep "Error" check_weeding > tmp
 
-	#if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]] ; then
-	#	echo $line >> ../new.patch.list
-	#fi
-	#rm tmp
-
-	cd ../
-
-	ciop-log "INFO" "Tar $patch"
-	tar cvfz $patch.tgz $patch
-	[ $? -ne 0 ] && return ${ERR_PATCH_TAR}
+	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]] ; then
+		
+		ciop-log "INFO" "Tar $patch"
+		tar cvfz $patch.tgz $patch
+		[ $? -ne 0 ] && return ${ERR_PATCH_TAR}
 	
-	ciop-log "INFO" "publishing $line"
-	patches="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/$patch.tgz )"
-	[ $? -ne 0 ] && return ${ERR_PATCH_PUBLISH}
+		ciop-log "INFO" "publishing $line"
+		patches="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/$patch.tgz )"
+		[ $? -ne 0 ] && return ${ERR_PATCH_PUBLISH}
 
-	rm -rf $patch
+		rm -rf $patch
 
-	cd ../
-	ciop-log "INFO" "creating tar for InSAR Master folder"
-	tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
-	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+		cd ../
 
-	ciop-log "INFO" "publishing InSAR Master folder"
-	ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
-	insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )"
-	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+		ciop-log "INFO" "creating tar for InSAR Master folder"
+		tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
+		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
+		ciop-log "INFO" "publishing InSAR Master folder"
+		ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
+		insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )"
+		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 
 
-	ciop-log "INFO" "publishing the final output"
-	echo "${insar_master},${patches}" | ciop-publish -s	
-	[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+		ciop-log "INFO" "publishing the final output"
+		echo "${insar_master},${patches}" | ciop-publish -s	
+		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+		
+	fi
 
 done
 

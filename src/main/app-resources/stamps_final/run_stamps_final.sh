@@ -91,27 +91,31 @@ done
 	
 	cd ${PROCESS}/INSAR_${master_date}
 
-	ciop-log "INFO" "StaMPS step 4: PS Weeding"
-	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4
-	[ $? -ne 0 ] && return ${ERR_STAMPS_5}
+	# remove patch list in case exists
+	rm -f patch.list
+	
+	# write new patch list according to stamps parallel if loop (maybe some patches are outsorted by stamps step 4)
+	for file in `ls -1 -d PATCH*`; do 
+
+		echo $file >> patch.list
+
+	done
 
 	ciop-log "INFO" "StaMPS step 5: Phase correctiona and merge of patches"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 5 5
 	[ $? -ne 0 ] && return ${ERR_STAMPS_5}
 
-
 	ciop-log "INFO" "StaMPS step 6: PS unwrapping"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 6 6
 	[ $? -ne 0 ] && return ${ERR_STAMPS_6}
 
-	ciop-log "INFO" "StaMPS step 7: Estimation of SCLA"
+	ciop-log "INFO" "StaMPS step 7: Estimation of SCLA and consequent deramping of IFGs"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 7 7
 	[ $? -ne 0 ] && return ${ERR_STAMPS_7}
 
 	ciop-log "INFO" "StaMPS step 8: Spatio-temporal Filtering"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 8 8
 	[ $? -ne 0 ] && return ${ERR_STAMPS_8}
-
 
 	cd ${PROCESS}
 	ciop-log "INFO" "creating tar for InSAR Master folder"
@@ -122,25 +126,27 @@ done
 	ciop-publish ${PROCESS}/STAMPS_FILES_${master_date}.tgz
 	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 	
+
+	# EXPORT PART --------------------------------------------------------------------------------
 	#cd ${PROCESS}/INSAR_${master_date}
 	#ciop-log "INFO" "StaMPS export for GIS layers"
 	#/opt/StaMPS_v3.3b1/matlab/export_L0_V_DOS $MCR
 	#[ $? -ne 0 ] && return ${ERR_EXPORT}
 	
 	# Stamps Mode of Velocity
-	SUF_VEL=V-DOS
+	#SUF_VEL=V-DOS
 	# Stamps Mode of Std.dev.
-	SUF_STD=VS-DO
+	#SUF_STD=VS-DO
 
 	# export folder wth csv
-	SOURCE=${PROCESS}/INSAR_${master_date}/export
+	#SOURCE=${PROCESS}/INSAR_${master_date}/export
 
 	# output folder for GIS layers
-	GIS_RESULTS=$PROCESS/INSAR_${master_date}/GIS-RESULTS
-	mkdir -p $GIS_RESULTS
+	#GIS_RESULTS=$PROCESS/INSAR_${master_date}/GIS-RESULTS
+	#mkdir -p $GIS_RESULTS
 
 	# Output Resolution in degree
-	RESOL=0.001
+	#RESOL=0.001
 
 	# write shapefile/tif in result folder script
 	#ogr2ogr -overwrite -f "ESRI Shapefile" $GIS_RESULTS/$SUF_VEL.shp $SOURCE/$SUF_VEL.vrt
@@ -148,17 +154,14 @@ done
 	#gdal_rasterize -a V_STDEV -tr $RESOL $RESOL -l $SUF_VEL $GIS_RESULTS/$SUF_VEL.shp $GIS_RESULTS/$SUF_STD.tif
 	#gdal_rasterize -a COH -tr $RESOL $RESOL -l $SUF_VEL $GIS_RESULTS/$SUF_VEL.shp $GIS_RESULTS/Coherence.tif
 
-	ciop-log "INFO" "creating tar for GIS result layers"
+	#ciop-log "INFO" "creating tar for GIS result layers"
 	#tar cvfz GIS_${master_date}.tgz  GIS-RESULTS
-	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+	#[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
-	ciop-log "INFO" "publishing GIS result layers"
-#	ciop-publish ${PROCESS}/GIS_${master_date}.tgz
-	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-
-
-
-
+	#ciop-log "INFO" "publishing GIS result layers"
+	#ciop-publish ${PROCESS}/GIS_${master_date}.tgz
+	#[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+	# EXPORT PART --------------------------------------------------------------------------------
 }
 cat | main
 exit ${SUCCESS}
