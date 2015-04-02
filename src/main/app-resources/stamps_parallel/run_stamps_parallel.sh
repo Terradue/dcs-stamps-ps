@@ -105,7 +105,7 @@ while read line; do
 	[ $? -ne 0 ] && return ${ERR_STAMPS_4}
 	grep "Error" check_weeding > tmp
 
-	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]] ; then
+	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]]; then
 		
 		ciop-log "INFO" "Tar $patch"
 		tar cvfz $patch.tgz $patch
@@ -124,10 +124,8 @@ while read line; do
 		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 		ciop-log "INFO" "publishing InSAR Master folder"
-		ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
 		insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )"
 		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-
 
 		ciop-log "INFO" "publishing the final output"
 		echo "${insar_master},${patches}" | ciop-publish -s	
