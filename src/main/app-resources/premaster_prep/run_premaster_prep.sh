@@ -1,7 +1,6 @@
 #!/bin/bash
 mode=$1
 
-
 export PATH=${_CIOP_APPLICATION_PATH}/master_slc/bin:$PATH
 
 

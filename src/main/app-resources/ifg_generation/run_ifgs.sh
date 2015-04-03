@@ -1,6 +1,5 @@
 #! /bin/bash
 mode=$1
-set -x 
 
 # source the ciop functions (e.g. ciop-log)
 [ "${mode}" != "test" ] && source ${ciop_job_include}
@@ -156,7 +155,7 @@ while read line; do
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
 		# check size of CPM file, in order to make sure there are enough points for resampling
-		CPM_size=`ls -s ${sensing_date}/CPM* | awk $'{print $1}'`
+		CPM_size=`ls -s CPM_Data | awk $'{print $1}'`
 		
 		# only process images with enough GCPs
 		if [[ $CPM_size -gt 4 ]];then
