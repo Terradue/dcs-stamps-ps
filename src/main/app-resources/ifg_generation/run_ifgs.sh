@@ -154,11 +154,8 @@ while read line; do
 		step_coreg_simple
 		[ $? -ne 0 ] && return ${ERR_STEP_COREG}
 
-		# check size of CPM file, in order to make sure there are enough points for resampling
-		CPM_size=`ls -s CPM_Data | awk $'{print $1}'`
-		
-		# only process images with enough GCPs
-		if [[ $CPM_size -gt 4 ]];then
+		# only process images with enough GCPs in CPM_data file
+		if [[ `ls -s CPM_Data | awk $'{print $1}'` -gt 4 ]];then
 			
 			# prepare dem.dorisin with right dem path if does not exist 
 			if [ ! -e ${PROCESS}/INSAR_${master_date}/dem.dorisin ]; then
