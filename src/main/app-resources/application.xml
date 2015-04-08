@@ -2,7 +2,7 @@
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="stamps-ps">
   <jobTemplates>
 	<jobTemplate id="premaster_prep">
-      <streamingExecutable>/application/premaster_prep/run_premaster_prep.sh</streamingExecutable>
+      <streamingExecutable>/application/premaster_prep/run_premaster_prep_auto.sh</streamingExecutable>
  	<defaultParameters>
         <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
         <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1/rdf</parameter>
