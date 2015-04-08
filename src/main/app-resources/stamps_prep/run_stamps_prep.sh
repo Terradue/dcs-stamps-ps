@@ -130,20 +130,20 @@ grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $2}'
 grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DELTA") print $2}' >> $INSARDIR/demparms.in 
 grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_FORMAT") print $2}' >> $INSARDIR/demparms.in 
 
-#mt_prep 0.42 4 5 50 200
+#mt_prep 0.42 5 6 50 200
 mt_prep 0.42 1 2 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
 
 # Check for size of pscands.1.da to see if enough PS are contained
-#rm patch.list
-#ls -1 -s */pscands.1.da > patch_size.txt
-#while read line; do
-# 	PATCH_SIZE=`echo $line | awk $'{print $ 1}'`
-#	if [[ "${PATCH_SIZE}" -gt "100" ]] ; then
-#		VALID_PATCHES=`echo $line | awk $'{print $2}' | awk -F '/' $'{print $1}'`
-#		echo $VALID_PATCHES >> patch.list
-#	fi
-#done < patch_size.txt
+rm patch.list
+ls -1 -s */pscands.1.da > patch_size.txt
+while read line; do
+ 	PATCH_SIZE=`echo $line | awk $'{print $ 1}'`
+	if [[ "${PATCH_SIZE}" -gt "100" ]] ; then
+		VALID_PATCHES=`echo $line | awk $'{print $2}' | awk -F '/' $'{print $1}'`
+		echo $VALID_PATCHES >> patch.list
+	fi
+done < patch_size.txt
 
 
 ciop-log "INFO" "Running Stamps step 1"
@@ -155,11 +155,11 @@ ciop-log "INFO" "Set Density Rand to 5"
 [ $? -ne 0 ] && return ${ERR_DENS_PARM}
 
 ciop-log "INFO" "Set Weed_zero_elevation to yes"
-/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR weed_zero "'y'"
+/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR weed_zero "y"
 [ $? -ne 0 ] && return ${ERR_WEED_PARM}
 
 ciop-log "INFO" "Set deramping to yes"
-/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "'y'"
+/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "y"
 [ $? -ne 0 ] && return ${ERR_SCLA_PARM}
 
 

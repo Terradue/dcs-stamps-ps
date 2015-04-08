@@ -77,7 +77,7 @@ premaster_date=""
 # download data into $RAW
 while read line; do
 
-	mkdir $RAW
+	mkdir -p $RAW
 	ciop-log "INFO" "Processing input: $line"
         IFS=',' read -r premaster_slc_ref scene_ref <<< "$line"
 

@@ -107,8 +107,6 @@ while read scene_ref; do
   	${slc_bin}
 	[ $? -ne 0 ] && return ${ERR_SLC}
  
-
-  
 	MAS_WIDTH=`grep WIDTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
 	MAS_LENGTH=`grep FILE_LENGTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
 
