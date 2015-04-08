@@ -103,10 +103,11 @@ while read line; do
 	ciop-log "INFO" "StaMPS step 4: PS Weeding"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 > check_weeding.log
 	[ $? -ne 0 ] && return ${ERR_STAMPS_4}
-	grep "Error" check_weeding > tmp
+	grep "Error" check_weeding.log > tmp
 
 	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]]; then
 		
+		cd ${PROCESS}/INSAR_${master_date}/
 		ciop-log "INFO" "Tar $patch"
 		tar cvfz $patch.tgz $patch
 		[ $? -ne 0 ] && return ${ERR_PATCH_TAR}
@@ -117,8 +118,7 @@ while read line; do
 
 		rm -rf $patch
 
-		cd ../
-
+		cd ${PROCESS}/
 		ciop-log "INFO" "creating tar for InSAR Master folder"
 		tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
 		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
