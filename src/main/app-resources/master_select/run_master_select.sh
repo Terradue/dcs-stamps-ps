@@ -146,8 +146,8 @@ ciop-log "INFO" "Running step_master_setup"
 #echo "first_p 1" >> master_crop.in
 #echo "last_p $MAS_WIDTH" >> master_crop.in
 
-echo "first_l 10000" > master_crop.in
-echo "last_l 15000" >> master_crop.in
+echo "first_l 1000" > master_crop.in
+echo "last_l 5000" >> master_crop.in
 echo "first_p 2000" >> master_crop.in
 echo "last_p 5000" >> master_crop.in
 

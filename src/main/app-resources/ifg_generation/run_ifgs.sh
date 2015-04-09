@@ -132,15 +132,15 @@ while read line; do
 		rm -f coreg.out
 	
 		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
-		sed -i 's/CC_NWIN.*/CC_NWIN         200/' coarse.dorisin  
+		sed -i 's/CC_NWIN.*/CC_NWIN         500/' coarse.dorisin  
 		
 		ciop-log "INFO" "coarse image correlation for ${sensing_date}"
 		doris coarse.dorisin > step_coarse.log
 		[ $? -ne 0 ] && return ${ERR_STEP_COARSE}
 	
-		#	get all calculated coarse offsets (line 85 - 284) and take out the value which appears most for better calculation of overall offset
-		offsetL=`cat coreg.out | sed -n -e 85,284p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
-		offsetP=`cat coreg.out | sed -n -e 85,284p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		#	get all calculated coarse offsets (line 85 - 584) and take out the value which appears most for better calculation of overall offset
+		offsetL=`cat coreg.out | sed -n -e 85,584p | awk $'{print $5}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
+		offsetP=`cat coreg.out | sed -n -e 85,584p | awk $'{print $6}' | sort | uniq -c | sort -g -r | head -1 | awk $'{print $2}'`
 
 		# 	write the lines with the new overall offset into variable	 
 		replaceL=`echo -e "Coarse_correlation_translation_lines: \t" $offsetL`
