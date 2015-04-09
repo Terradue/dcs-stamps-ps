@@ -101,7 +101,7 @@ done
 
 	done
 
-	ciop-log "INFO" "StaMPS step 5: Phase correctiona and merge of patches"
+	ciop-log "INFO" "StaMPS step 5: Phase correction and merge of patches"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 5 5
 	[ $? -ne 0 ] && return ${ERR_STAMPS_5}
 

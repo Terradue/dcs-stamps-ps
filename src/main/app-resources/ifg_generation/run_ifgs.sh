@@ -52,8 +52,8 @@ ${ERR_FINAL_PUBLISH}) msg="Failed to publish all output together";;
 esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-#[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
-[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
+[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+#[ -n "${TMPDIR}" ] && chmod -R 777 $TMPDIR
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -131,7 +131,7 @@ while read line; do
 		cp $DORIS_SCR/coarse.dorisin .
 		rm -f coreg.out
 	
-		#	change number of corr. windows to 200 for safer processsing (especially for scenes with water)
+		#	change number of corr. windows to 500 for more robust processsing (especially for scenes with water)
 		sed -i 's/CC_NWIN.*/CC_NWIN         500/' coarse.dorisin  
 		
 		ciop-log "INFO" "coarse image correlation for ${sensing_date}"
