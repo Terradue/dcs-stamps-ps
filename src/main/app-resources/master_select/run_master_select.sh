@@ -61,7 +61,6 @@ esac
 [ "${retval}" != "0" ] && ciop-log "ERROR" \
 "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
 [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
-#[ -n "${TMPDIR}" ] && chmod -R 777 ${TMPDIR}
 [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -130,13 +129,14 @@ master_select > master.date
 master_date=`awk 'NR == 12' master.date | awk $'{print $1}'`
 
 ciop-log "INFO" "Choose SLC from $master_date as final master"
-
-#master_date=20100415
 master=`grep ${master_date} ${TMPDIR}/slc_folders.tmp`
 
 ciop-log "INFO" "Retrieve final master SLC from ${master_date}"
 ciop-copy -f -O ${SLC}/ ${master}
-	cd ${SLC}/${master_date}
+
+cd ${SLC}/${master_date}
+
+# get extents
 MAS_WIDTH=`grep WIDTH ${master_date}.slc.rsc | awk '{print $2}' `
 MAS_LENGTH=`grep FILE_LENGTH ${master_date}.slc.rsc | awk '{print $2}' `
 
@@ -149,7 +149,7 @@ ciop-log "INFO" "Running step_master_setup"
 echo "first_l 10000" > master_crop.in
 echo "last_l 15000" >> master_crop.in
 echo "first_p 2000" >> master_crop.in
-echo "last_p 4000" >> master_crop.in
+echo "last_p 5000" >> master_crop.in
 
 step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
