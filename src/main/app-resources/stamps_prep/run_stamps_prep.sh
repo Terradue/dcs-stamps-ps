@@ -196,6 +196,7 @@ while read line; do
 
 done < INSAR_${master_date}/patch.list
 
+ciop-publish -m "${dem}"
 }
 cat | main
 exit ${SUCCESS}

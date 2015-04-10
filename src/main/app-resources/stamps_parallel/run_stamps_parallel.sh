@@ -102,7 +102,7 @@ while read line; do
 	
 	ciop-log "INFO" "StaMPS step 4: PS Weeding"
 	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 > check_weeding.log
-	[ $? -ne 0 ] && return ${ERR_STAMPS_4}
+	res=$?; [ $res -ne 0 ] && ciop-log "WARN" "stamps 4 exited with $res for $patch"
 	grep "Error" check_weeding.log > tmp
 
 	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]]; then
