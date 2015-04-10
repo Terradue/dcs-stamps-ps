@@ -101,39 +101,53 @@ while read line; do
 	[ $? -ne 0 ] && return ${ERR_STAMPS_3}
 	
 	ciop-log "INFO" "StaMPS step 4: PS Weeding"
-	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 > check_weeding.log
-	res=$?; [ $res -ne 0 ] && ciop-log "WARN" "stamps 4 exited with $res for $patch"
-	grep "Error" check_weeding.log > tmp
+	/opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 4 4 
+	res=$?; [ $res -ne 0 ] && ciop-log "WARN" "stamps 4 exited with $res for $patch (can be expected for decorrelated areas like water, forest etc.)"
 
-	if [[ `wc -l tmp | awk $'{print $1}'` -eq "0" ]]; then
+#	if [[ $res -eq "0" ]]; then
 		
-		cd ${PROCESS}/INSAR_${master_date}/
-		ciop-log "INFO" "Tar $patch"
-		tar cvfz $patch.tgz $patch
-		[ $? -ne 0 ] && return ${ERR_PATCH_TAR}
+#		cd ${PROCESS}/INSAR_${master_date}/
+#		ciop-log "INFO" "Tar $patch"
+#		tar cvfz $patch.tgz $patch
+#		[ $? -ne 0 ] && return ${ERR_PATCH_TAR}
 	
-		ciop-log "INFO" "publishing $line"
-		patches="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/$patch.tgz )"
-		[ $? -ne 0 ] && return ${ERR_PATCH_PUBLISH}
+#		ciop-log "INFO" "publishing $line"
+#		patches="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}/$patch.tgz )"
+#		[ $? -ne 0 ] && return ${ERR_PATCH_PUBLISH}
 
+#		rm -rf $patch
+
+#		cd ${PROCESS}/
+#		ciop-log "INFO" "creating tar for InSAR Master folder"
+#		tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
+#		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+#
+#		ciop-log "INFO" "publishing InSAR Master folder"
+#		insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )"
+#		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
+
+#		ciop-log "INFO" "publishing the final output"
+#		echo "${insar_master},${patches}" | ciop-publish -s	
+#		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
+		
+#	fi
+
+	if [[ $res -ne "0" ]]; then
+
+		cd ${PROCESS}/INSAR_${master_date}/
 		rm -rf $patch
 
-		cd ${PROCESS}/
-		ciop-log "INFO" "creating tar for InSAR Master folder"
-		tar cvfz INSAR_${master_date}.tgz  INSAR_${master_date}
-		[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
-
-		ciop-log "INFO" "publishing InSAR Master folder"
-		insar_master="$( ciop-publish -a ${PROCESS}/INSAR_${master_date}.tgz )"
-		[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
-
-		ciop-log "INFO" "publishing the final output"
-		echo "${insar_master},${patches}" | ciop-publish -s	
-		[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
-		
 	fi
-
 done
+
+cd ${PROCESS}
+ciop-log "INFO" "creating tar for InSAR Master folder"
+tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
+[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
+
+ciop-log "INFO" "publishing the final output"
+ciop-publish ${PROCESS/INSAR_${master_date}.tgz
+[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
 }
 cat | main
