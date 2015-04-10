@@ -146,7 +146,7 @@ tar cvfz INSAR_${master_date}.tgz INSAR_${master_date}
 [ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 ciop-log "INFO" "publishing the final output"
-ciop-publish ${PROCESS/INSAR_${master_date}.tgz
+ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
 [ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
 }
