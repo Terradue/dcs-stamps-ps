@@ -130,8 +130,8 @@ grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $2}'
 grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DELTA") print $2}' >> $INSARDIR/demparms.in 
 grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_FORMAT") print $2}' >> $INSARDIR/demparms.in 
 
-mt_prep 0.42 5 6 50 200
-#mt_prep 0.42 1 2 50 200
+#mt_prep 0.42 5 6 50 200
+mt_prep 0.42 1 2 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
 
 # Check for size of pscands.1.da to see if enough PS are contained
