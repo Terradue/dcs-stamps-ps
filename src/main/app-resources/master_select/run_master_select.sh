@@ -141,15 +141,15 @@ MAS_WIDTH=`grep WIDTH ${master_date}.slc.rsc | awk '{print $2}' `
 MAS_LENGTH=`grep FILE_LENGTH ${master_date}.slc.rsc | awk '{print $2}' `
 
 ciop-log "INFO" "Running step_master_setup"
-#echo "first_l 1" > master_crop.in
-#echo "last_l $MAS_LENGTH" >> master_crop.in
-#echo "first_p 1" >> master_crop.in
-#echo "last_p $MAS_WIDTH" >> master_crop.in
+echo "first_l 1" > master_crop.in
+echo "last_l $MAS_LENGTH" >> master_crop.in
+echo "first_p 1" >> master_crop.in
+echo "last_p $MAS_WIDTH" >> master_crop.in
 
-echo "first_l 10000" > master_crop.in
-echo "last_l 15000" >> master_crop.in
-echo "first_p 2000" >> master_crop.in
-echo "last_p 4000" >> master_crop.in
+#echo "first_l 10000" > master_crop.in
+##echo "last_l 15000" >> master_crop.in
+#echo "first_p 2000" >> master_crop.in
+#echo "last_p 4000" >> master_crop.in
 
 step_master_setup
 [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
