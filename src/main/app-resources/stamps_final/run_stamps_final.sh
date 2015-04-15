@@ -86,9 +86,11 @@ while read line; do
 	ciop-log "INFO" "Retrieving PATCH folder"
 #	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${patches}
 	ciop-copy -O ${PROCESS} ${line}
+	[ $? -ne 0 ] && return ${ERR_PATCH_RETRIEVE}
+
 	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
 	ciop-log "INFO" "Final Master Date: $master_date"
-	[ $? -ne 0 ] && return ${ERR_PATCH_RETRIEVE}
+
 
 done
 	
