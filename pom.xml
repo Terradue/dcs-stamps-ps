@@ -120,6 +120,9 @@
 					<requires>
 						<require>adore-t2</require>
 						<require>python-lxml</require>
+						<require>sar-helpers</require>
+						<require>StaMPS-t2-mcr</require>
+						<require>matlab717</require>
 					</requires>
 					<needarch>true</needarch>
 				</configuration>
