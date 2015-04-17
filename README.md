@@ -36,7 +36,7 @@ sudo yum -y downgrade geos-3.3.2
 
 ##### Using the releases
 
-Log on the developer cloud sandbox. Download the rpm package from https://github.com/Terradue/dcs-doris-l1-coseismic/releases. 
+Log on the developer cloud sandbox. Download the rpm package from https://github.com/Terradue/dcs-stamps-ps/releases.
 Install the dowanloaded package by running these commands in a shell:
 
 ```bash
@@ -69,7 +69,6 @@ To learn more and find information go to
 * [Developer Cloud Sandbox](http://docs.terradue.com/developer) service 
 * [StaMPS](http://homepages.see.leeds.ac.uk/~earahoo/stamps/StaMPS_Manual_v3.1.pdf)
 * [ESA Geohazards Exploitation Platform](https://geohazards-tep.eo.esa.int)
-* [DLR Supersite TerraSAR-X](https://supersites.eoc.dlr.de/)
 
 ### <a name="authors"></a>Authors (alphabetically)
 
