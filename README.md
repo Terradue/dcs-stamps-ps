@@ -60,7 +60,7 @@ Run this command in a shell:
 ```bash
 ciop-run
 ```
-Or invoke the Web Processing Service via the Sandbox dashboard or the [Geohazards Thematic Exploitation platform](https://geohazards-tep.eo.esa.int) providing a master and one or more slave product URLs and orbit file specification (for Envisat DOR or ODR, ERS ODR):
+Or invoke the Web Processing Service via the Sandbox dashboard or the [Geohazards Thematic Exploitation platform](https://geohazards-tep.eo.esa.int) providing a master, a stack of slave product URLs and orbit file specification (for Envisat DOR or ODR, ERS ODR):
 
 ### <a name="community"></a>Community and Documentation
 
@@ -74,6 +74,7 @@ To learn more and find information go to
 
 * Brito Fabrice
 * D'Andria Fabio
+* Vollrath Andreas
 
 ### <a name="questions"></a>Questions, bugs, and suggestions
 
@@ -84,5 +85,3 @@ Please file any bugs or questions as [issues](https://github.com/geohazards-tep/
 Copyright 2015 Terradue Srl
 
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
-
-> This work has been co-funded by the EC FP7 project MED-SUV Grant agreement 308665 
