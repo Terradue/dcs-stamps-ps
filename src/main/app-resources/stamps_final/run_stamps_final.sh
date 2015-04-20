@@ -128,7 +128,7 @@ done
 	[ $? -ne 0 ] && return ${ERR_INSAR_TAR}
 
 	ciop-log "INFO" "creating tar InSAR Master folder for final export"
-	ciop-publish ${PROCESS}/STAMPS_FILES_${master_date}.tgz
+	ciop-publish -m ${PROCESS}/STAMPS_FILES_${master_date}.tgz
 	[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
 	
 
