@@ -158,9 +158,9 @@ ciop-log "INFO" "Set Weed_zero_elevation to yes"
 /opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR weed_zero "y"
 [ $? -ne 0 ] && return ${ERR_WEED_PARM}
 
-ciop-log "INFO" "Set deramping to yes"
-/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "y"
-[ $? -ne 0 ] && return ${ERR_SCLA_PARM}
+#ciop-log "INFO" "Set deramping to yes"
+#/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "y"
+#[ $? -ne 0 ] && return ${ERR_SCLA_PARM}
 
 
 ciop-log "INFO" "creating tar for InSAR Master folder"
