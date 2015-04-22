@@ -146,7 +146,7 @@ echo "last_l $MAS_LENGTH" >> master_crop.in
 echo "first_p 1" >> master_crop.in
 echo "last_p $MAS_WIDTH" >> master_crop.in
 
-#echo "first_l 11000" > master_crop.in
+#echo "first_l 10000" > master_crop.in
 #echo "last_l 13000" >> master_crop.in
 #echo "first_p 2000" >> master_crop.in
 #echo "last_p 4000" >> master_crop.in

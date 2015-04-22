@@ -4,8 +4,8 @@
 	<jobTemplate id="premaster_prep">
       <streamingExecutable>/application/premaster_prep/run_premaster_prep_auto.sh</streamingExecutable>
  	<defaultParameters>
-        <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
-        <parameter id="master" title="master product reference" abstract="Define the master product reference" scope="runtime">http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1/rdf</parameter>
+            <parameter id="orbit" title="Orbits files: for Envisat DOR or VOR, ERS ODR" abstract="Type of orbits files for focussing step with ROI_PAC" scope="runtime">VOR</parameter>
+            <parameter id="master" title="Candidate master product reference" abstract="Define the canditate master product reference" scope="runtime">http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1/rdf</parameter>
       </defaultParameters>
       <defaultJobconf>
       	<property id="ciop.job.max.tasks">1</property>
@@ -15,7 +15,7 @@
     <jobTemplate id="preprocess">
       <streamingExecutable>/application/preprocess/run_preprocess.sh</streamingExecutable>
  	<defaultParameters>
-	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or VOR, ERS ODR" abstract="Type of orbits files for focussing step with ROI_PAC" scope="runtime">VOR</parameter>
 	</defaultParameters>
         <defaultJobconf>
           <property id="mapred.task.timeout">9900000000</property>
@@ -24,7 +24,7 @@
     <jobTemplate id="master_select">
       <streamingExecutable>/application/master_select/run_master_select.sh</streamingExecutable>
 	<defaultParameters>
-	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	    <parameter id="orbit" title="Orbits files: for Envisat DOR or VOR, ERS ODR" abstract="Type of orbits files for focussing step with ROI_PAC" scope="runtime">VOR</parameter>
 	</defaultParameters>
         <defaultJobconf>
 	<property id="ciop.job.max.tasks">1</property>
@@ -34,7 +34,7 @@
     <jobTemplate id="ifg_gener">
       <streamingExecutable>/application/ifg_generation/run_ifgs.sh</streamingExecutable>
 	<defaultParameters>
-	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or VOR, ERS ODR" abstract="Type of orbits files for focussing step with ROI_PAC" scope="runtime">VOR</parameter>
 	</defaultParameters>
         <defaultJobconf>
         <property id="mapred.task.timeout">9900000000</property>
@@ -43,7 +43,7 @@
    <jobTemplate id="stamps_prep">
       <streamingExecutable>/application/stamps_prep/run_stamps_prep.sh</streamingExecutable>
 	<defaultParameters>
-	  <parameter id="orbit" title="Orbits files: for Envisat DOR or ODR, ERS ODR" abstract="Orbits files" scope="runtime">VOR</parameter>
+	  <parameter id="orbit" title="Orbits files: for Envisat DOR or VOR, ERS ODR" abstract="Type of orbits files for focussing step with ROI_PAC" scope="runtime">VOR</parameter>
 	</defaultParameters>	
 	<defaultJobconf>
 	<property id="ciop.job.max.tasks">1</property>
@@ -64,12 +64,12 @@
         </defaultJobconf>
   </jobTemplate>
   </jobTemplates>
-  <workflow id="dcs-stamps-ps" title="StaMPS" abstract="StaMPS">
+  <workflow id="dcs-stamps-ps" title="StaMPS Permanent Scatterer" abstract="StaMPS (Stanford Method for Persistent Scatterers) is a software package that implements an InSAR persistent scatterer (PS) method developed to work even in terrains devoid of man-made structures and/or undergoing non-steady deformation. This processing service is the StaMPS Permanent Scatterer (PS).">
     <workflowVersion>1.0</workflowVersion>
      <node id="node_premaster_prep">
       <job id="premaster_prep" />
       <sources>
-         <source scope="runtime" id="slave" title="Slave product reference" abstract="Define the slave product reference to use with ADORE" refid="file:urls">/application/inputs/input.list2</source>
+         <source scope="runtime" id="slave" title="Slave product references of the SAR stack to process" abstract="Define the slave products reference to use with StaMPS PS" refid="string:list">http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPAM20091022_081843_000000162083_00336_39969_4604.N1/rdf,http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPAM20091231_081842_000000162085_00336_40971_4758.N1/rdf,http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPAM20100204_081841_000000172086_00336_41472_4820.N1/rdf,http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPAM20100415_081840_000000162088_00336_42474_4966.N1/rdf,http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPDE20100520_081839_000000162089_00336_42975_0724.N1/rdf,http://eo-virtual-archive4.esa.int/search/ASA_IM__0P/ASA_IM__0CNPDE20100729_081840_000000172091_00336_43977_2195.N1/rdf</source>
       </sources>
       <parameters/>
     </node>

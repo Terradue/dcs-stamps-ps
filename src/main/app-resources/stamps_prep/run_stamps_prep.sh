@@ -130,7 +130,7 @@ grep SAM_IN_UL $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_UL") print $2}'
 grep SAM_IN_DELTA $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_DELTA") print $2}' >> $INSARDIR/demparms.in 
 grep SAM_IN_FORMAT $INSARDIR/timing.dorisin | gawk '{if ($1=="SAM_IN_FORMAT") print $2}' >> $INSARDIR/demparms.in 
 
-#mt_prep 0.42 5 6 50 200
+#mt_prep 0.42 1 2 50 200
 mt_prep 0.42 5 4 50 200
 [ $? -ne 0 ] && return ${ERR_MT_PREP}
 
@@ -146,6 +146,8 @@ while read line; do
 done < patch_size.txt
 
 
+ciop-log "DEBUG" "I am in $PWD"
+
 ciop-log "INFO" "Running Stamps step 1"
 /opt/StaMPS_v3.3b1/matlab/run_stamps.sh $MCR 1 1
 [ $? -ne 0 ] && return ${ERR_STAMPS_1}
@@ -158,9 +160,9 @@ ciop-log "INFO" "Set Weed_zero_elevation to yes"
 /opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR weed_zero "y"
 [ $? -ne 0 ] && return ${ERR_WEED_PARM}
 
-#ciop-log "INFO" "Set deramping to yes"
-#/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "y"
-#[ $? -ne 0 ] && return ${ERR_SCLA_PARM}
+ciop-log "INFO" "Set deramping to yes"
+/opt/StaMPS_v3.3b1/matlab/run_setparm.sh $MCR scla_deramp "y"
+[ $? -ne 0 ] && return ${ERR_SCLA_PARM}
 
 
 ciop-log "INFO" "creating tar for InSAR Master folder"

@@ -67,27 +67,28 @@ local res
 
 while read line; do     
 
-	#ciop-log "INFO" "Processing input: $line"
-        #IFS=',' read -r insar_master patches <<< "$line"
-	#ciop-log "DEBUG" "1:$insar_master 2:$patches"
+	ciop-log "INFO" "Processing input: $line"
+        IFS=',' read -r insar_master patches <<< "$line"
+	ciop-log "DEBUG" "1:$insar_master 2:$patches"
 
 	
- #       if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
+        if [ ! -d "${PROCESS}/INSAR_${master_date}/" ]; then
 	
-#		ciop-log "INFO" "Retrieving Master folder"
-#		ciop-copy -O ${PROCESS} ${insar_master}
-#		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}		
+		ciop-log "INFO" "Retrieving Master folder"
+		ciop-copy -O ${PROCESS} ${insar_master}
+		[ $? -ne 0 ] && return ${ERR_MASTER_RETRIEVE}		
 		
-#  		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
-#		ciop-log "INFO" "Final Master Date: $master_date"
-#	
-#	fi
+  		master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
+		ciop-log "INFO" "Final Master Date: $master_date"
+	
+	fi
 	
 	ciop-log "INFO" "Retrieving PATCH folder"
-#	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${patches}
-	ciop-copy -O ${PROCESS} ${line}
+	ciop-copy -O ${PROCESS}/INSAR_${master_date} ${patches}
+#	ciop-copy -o ${PROCESS} ${line}
 	[ $? -ne 0 ] && return ${ERR_PATCH_RETRIEVE}
 
+#
 	master_date=`basename ${PROCESS}/I* | cut -c 7-14` 	
 	ciop-log "INFO" "Final Master Date: $master_date"
 
