@@ -63,8 +63,14 @@ main() {
  
     [ ${FIRST} == "TRUE" ] && {
       # creates the adore directory structure
-      ciop-log "INFO" "creating the directory structure"
-      set_env
+      export TMPDIR=$( set_env )
+      export RAW=${TMPDIR}/RAW
+      export PROCESS=${TMPDIR}/PROCESS
+      export SLC=${PROCESS}/SLC
+      export VOR_DIR=${TMPDIR}/VOR
+      export INS_DIR=${TMPDIR}/INS
+
+      ciop-log "INFO" "creating the directory structure in $TMPDIR"
   
       # which orbits
       orbits="$( get_orbit_flag )"
@@ -124,8 +130,10 @@ main() {
 
     echo "${premaster_slc_ref},${scene_ref}" | ciop-publish -s
     FIRST="FALSE"
-
   done
+
+  ciop-log "INFO" "removing temporary files $TMPDIR"
+  rm -rf ${TMPDIR}
 }
 
 cat | main

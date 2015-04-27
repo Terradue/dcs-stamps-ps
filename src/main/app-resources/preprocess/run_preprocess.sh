@@ -11,7 +11,7 @@ source ${_CIOP_APPLICATION_PATH}/lib/stamps-helpers.sh
 source /opt/StaMPS_v3.3b1/StaMPS_CONFIG.bash
 
 # source sar helpers and functions
-set_env
+#set_env
 
 #--------------------------------
 #       2) Error Handling       
@@ -62,7 +62,7 @@ cleanExit() {
 
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
     "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-  [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+  #[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -77,6 +77,15 @@ main() {
   first=TRUE
   premaster_date=""
 
+  export TMPDIR=$( set_env )
+  export RAW=${TMPDIR}/RAW
+  export PROCESS=${TMPDIR}/PROCESS
+  export SLC=${PROCESS}/SLC
+  export VOR_DIR=${TMPDIR}/VOR
+  export INS_DIR=${TMPDIR}/INS  
+
+  ciop-log "INFO" "creating the directory structure in $TMPDIR"
+
   # download data into $RAW
   while read line
   do
@@ -85,16 +94,40 @@ main() {
     IFS=',' read -r premaster_slc_ref scene_ref <<< "${line}"
 
     ciop-log "DEBUG" "1:${premaster_slc_ref} 2:${scene_ref}"
+
+    #if it's the first scene we have to download and setup the master as well
+    [ "${first}" == "TRUE" ] && {
+      ciop-log "DEBUG" "master!!! $first"
+      ciop-copy -O ${PROCESS} ${premaster_slc_ref}
+      for myfile in `find ${PROCESS} -name "*.res"`
+      do
+        ciop-log "DEBUG" "updating path in ${myfile}"
+        sed -i "s#\(.* RESULTFILE.*\)\(/tmp/.*\)#\1${myfile}#g" ${myfile}
+        #let's find the slc filename and location
+        myslc="`basename $( grep 'Data_output_file' $myfile | sed 's#.*\(/tmp.*\)#\1#g' )`"
+        sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1$( dirname $myfile )/${myslc}#g" ${myfile}
+      done
+      first="FALSE"
+    }
+
     scene=$( get_data ${scene_ref} ${RAW} ) 
     #scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
     [ $? -ne 0 ] && return ${ERR_SCENE}
+    for myfile in `find ${RAW} -name "*.res"`
+    do
+      ciop-log "DEBUG" "updating path in RAW ${myfile}"
+      sed -i "s#\(.* RESULTFILE.*\)\(/tmp/.*\)#\1${myfile}#g" ${myfile}
+      #let's find the slc filename and location
+      myslc="`basename $( grep 'Data_output_file' $myfile | sed 's#.*\(/tmp.*\)#\1#g' )`"
+      sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1$( dirname $myfile )/${myslc}#g" ${myfile}
+    done
     ciop-log "INFO" "Processing scene: ${scene}"
 
     # which orbits (defined in application.xml)
     orbits="$( get_orbit_flag )"
     [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
     ciop-log "INFO" "Orbit format used: ${orbits}" 
-  
+
     ciop-log "INFO" "Get sensing date"
     sensing_date=$( get_sensing_date ${scene} )
     [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
@@ -136,7 +169,9 @@ main() {
     slc_folders="$( ciop-publish -a ${SLC}/${sensing_date}.tgz )"
     [ $? -ne 0 ] && return ${ERR_SLC_PUBLISH}
 
-    if [ ! -d "${PROCESS}/INSAR_${premaster_date}/" ]
+    premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
+    [ ! -d "${PROCESS}/INSAR_${premaster_date}" ] && ciop-log "DEBUG" "${PROCESS}/INSAR_${premaster_date} does not exist" || ciop-log "DEBUG" "${PROCESS}/INSAR_${premaster_date} exists"
+    if [ ! -d "${PROCESS}/INSAR_${premaster_date}" ]
     then
       ciop-copy -O ${PROCESS} ${premaster_slc_ref}
       [ $? -ne 0 ] && return ${ERR_MASTER}
@@ -182,6 +217,9 @@ main() {
     rm -rf ${RAW}
     cd -
   done
+
+  #rm -rf $TMPDIR
+
 }
 
 cat | main
