@@ -1,9 +1,15 @@
+export SAR_HELPERS_HOME=/opt/sar-helpers/lib/
+. ${SAR_HELPERS_HOME}/sar-helpers.sh
+
 set_env() {
-  export SAR_HELPERS_HOME=/opt/sar-helpers/lib/
-  . ${SAR_HELPERS_HOME}/sar-helpers.sh
+#  export SAR_HELPERS_HOME=/opt/sar-helpers/lib/
+#  . ${SAR_HELPERS_HOME}/sar-helpers.sh
 
   # shorter temp path
   export TMPDIR=/tmp/$( uuidgen )
+
+  echo $TMPDIR
+
   export RAW=${TMPDIR}/RAW
   export PROCESS=${TMPDIR}/PROCESS
   export SLC=${PROCESS}/SLC
@@ -85,4 +91,16 @@ get_aux() {
   }
   return 0 
   
+}
+
+fix_res_path()
+{
+  for myfile in `find $1 -name "*.res"`
+    do
+      ciop-log "DEBUG" "updating res path in ${myfile}"
+      sed -i "s#\(.* RESULTFILE.*\)\(/tmp/.*\)#\1${myfile}#g" ${myfile}
+      #let's find the slc filename and location
+      myslc="`basename $( grep 'Data_output_file' $myfile | sed 's#.*\(/tmp.*\)#\1#g' )`"
+      sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1$( dirname $myfile )/${myslc}#g" ${myfile}
+    done
 }

@@ -62,7 +62,7 @@ cleanExit() {
 
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
     "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-  #[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
+  [ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -97,30 +97,15 @@ main() {
 
     #if it's the first scene we have to download and setup the master as well
     [ "${first}" == "TRUE" ] && {
-      ciop-log "DEBUG" "master!!! $first"
       ciop-copy -O ${PROCESS} ${premaster_slc_ref}
-      for myfile in `find ${PROCESS} -name "*.res"`
-      do
-        ciop-log "DEBUG" "updating path in ${myfile}"
-        sed -i "s#\(.* RESULTFILE.*\)\(/tmp/.*\)#\1${myfile}#g" ${myfile}
-        #let's find the slc filename and location
-        myslc="`basename $( grep 'Data_output_file' $myfile | sed 's#.*\(/tmp.*\)#\1#g' )`"
-        sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1$( dirname $myfile )/${myslc}#g" ${myfile}
-      done
+      fix_res_path "${PROCESS}"
       first="FALSE"
     }
 
     scene=$( get_data ${scene_ref} ${RAW} ) 
     #scene=$( ciop-copy -f -O ${RAW} $( echo ${scene_ref} | tr -d "\t")  )
     [ $? -ne 0 ] && return ${ERR_SCENE}
-    for myfile in `find ${RAW} -name "*.res"`
-    do
-      ciop-log "DEBUG" "updating path in RAW ${myfile}"
-      sed -i "s#\(.* RESULTFILE.*\)\(/tmp/.*\)#\1${myfile}#g" ${myfile}
-      #let's find the slc filename and location
-      myslc="`basename $( grep 'Data_output_file' $myfile | sed 's#.*\(/tmp.*\)#\1#g' )`"
-      sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1$( dirname $myfile )/${myslc}#g" ${myfile}
-    done
+    fix_res_path "$RAW"
     ciop-log "INFO" "Processing scene: ${scene}"
 
     # which orbits (defined in application.xml)
@@ -175,6 +160,7 @@ main() {
     then
       ciop-copy -O ${PROCESS} ${premaster_slc_ref}
       [ $? -ne 0 ] && return ${ERR_MASTER}
+      fix_res_path "${PROCESS}"
 
       premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
       [ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
@@ -218,10 +204,10 @@ main() {
     cd -
   done
 
-  #rm -rf $TMPDIR
-
+  ciop-log "INFO" "removing temporary files $TMPDIR"
+  rm -rf ${TMPDIR}
 }
 
 cat | main
-exit ${SUCCESS}
+exit $?
 

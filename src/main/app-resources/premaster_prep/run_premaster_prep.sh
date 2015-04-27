@@ -137,5 +137,4 @@ main() {
 }
 
 cat | main
-
-exit ${SUCCESS}
+exit $?
