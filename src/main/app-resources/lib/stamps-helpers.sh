@@ -99,11 +99,18 @@ fix_res_path()
     do
       ciop-log "DEBUG" "updating res path in ${myfile}"
       sed -i "s#\(.* RESULTFILE.*\)\(/tmp/.*\)#\1${myfile}#g" ${myfile}
+
       # let's find the slc filename and location
       myslc="`basename $( grep 'Data_output_file.*\.slc' $myfile | sed 's#.*\(/tmp.*\)#\1#g' ) 2> /dev/null`"
-      [ ! -z "${myslc}" ] && sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1$( dirname $myfile )/${myslc}#g" ${myfile}
+      myslcpath="$( find $1 -name "${myslc}" 2> /dev/null )"
+      [ ! -z "${myslc}" ] && [ ! -z "${myslcpath}" ] && sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.slc#\1${myslcpath}#g" ${myfile}
+
       # same with dem
       mydem="`basename $( grep 'Data_output_file.*\.dem' $myfile | sed 's#.*\(/tmp.*\)#\1#g' ) 2> /dev/null`"
-      [ ! -z "${mydem}" ] && sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.dem#\1$( dirname $myfile )/${mydem}#g" ${myfile}
+      mydempath="$( find $1 -name "${mydem}" 2> /dev/null )"
+      [ ! -z "${mydem}" ] && [ ! -z "${mydempath}" ] && sed -i "s#\(Data_output_file:.*\)\(/tmp/.*\)/.*\.dem#\1${mydempath}#g" ${myfile}
+
+      mydem="`basename $( grep 'DEM source file:.*\.dem' $myfile | sed 's#.*\(/tmp.*\)#\1#g' ) 2> /dev/null`"
+      [ ! -z "${mydem}" ] && sed -i "s#\(DEM source file:.*\)\(/tmp/.*\)/.*\.dem#\1$( dirname $myfile | cut -d "/" -f 1-3 )/DEM/${mydem}#g" ${myfile}
     done
 }
