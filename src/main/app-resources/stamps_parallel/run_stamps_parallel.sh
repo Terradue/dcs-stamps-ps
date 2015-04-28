@@ -158,6 +158,9 @@ main() {
 #ciop-publish ${PROCESS}/INSAR_${master_date}.tgz
 #[ $? -ne 0 ] && return ${ERR_FINAL_PUBLISH}
 
+  ciop-log "INFO" "removing temporary files $TMPDIR"
+  rm -rf ${TMPDIR}
+
   return ${SUCCESS}
 }
 

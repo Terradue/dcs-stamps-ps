@@ -172,6 +172,9 @@ main() {
   #[ $? -ne 0 ] && return ${ERR_INSAR_PUBLISH}
   # EXPORT PART --------------------------------------------------------------------------------
 
+  ciop-log "INFO" "removing temporary files $TMPDIR"
+  rm -rf ${TMPDIR}
+
   return ${SUCCESS}
 }
 
