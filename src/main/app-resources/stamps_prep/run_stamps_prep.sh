@@ -67,7 +67,6 @@ cleanExit() {
 
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
     "Error ${retval} - ${msg}, processing aborted" || ciop-log "INFO" "${msg}"
-  #[ -n "${TMPDIR}" ] && rm -rf ${TMPDIR}
   [ "${mode}" == "test" ] && return ${retval} || exit ${retval}
 }
 trap cleanExit EXIT
@@ -210,9 +209,9 @@ main() {
   ciop-log "DEBUG" "publishing dem ${dem}"
   ciop-publish -m "${dem}"
 
-  #ciop-log "INFO" "removing temporary files $TMPDIR"
-  #rm -rf ${TMPDIR}
-
+  ciop-log "INFO" "removing temporary files $TMPDIR"
+  rm -rf ${TMPDIR}
+ 
   return ${SUCCESS}
 
 }
