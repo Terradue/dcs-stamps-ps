@@ -125,6 +125,10 @@
 						<require>matlab717</require>
 					</requires>
 					<needarch>true</needarch>
+					<postinstallScriptlet>
+						<scriptFile>${project.basedir}/src/install/post_install.sh</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</postinstallScriptlet>
 				</configuration>
 			</plugin>
 
