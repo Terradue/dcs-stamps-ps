@@ -72,7 +72,8 @@ dem() {
   local bbox
   local wkt
  
-  wkt="$( ciop-casmeta -f "dct:spatial" "${dataset_ref}" )"
+  #wkt="$( ciop-casmeta -f "dct:spatial" "${dataset_ref}" )"
+  wkt="$( opensearch-client "${dataset_ref}" wkt | head -1 )"
   [ -n "${wkt}" ] && bbox="$( mbr.py "${wkt}" )" || return 1
 
   wdir=${PWD}/.wdir
