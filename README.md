@@ -48,6 +48,7 @@ sudo yum -y install dcs-stamps-ps-<version>.x86_64.rpm
 Log on the developer sandbox and run these commands in a shell:
 
 ```bash
+sudo yum -y install adore-t2 python-lxml sar-helpers StaMPS-t2-mcr matlab717
 git clone git@github.com:Terradue/dcs-stamps-ps.git
 cd dcs-stamps-ps
 mvn install
