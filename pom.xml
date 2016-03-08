@@ -7,7 +7,7 @@
 	<artifactId>dcs-stamps-ps</artifactId>
 	<packaging>rpm</packaging>
 	<description>Developer Cloud Sandbox for StaMPS PS processing</description>
-	<version>0.1</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<scm>
 		<connection>scm:git:git@github.com:Terradue/dcs-stamps-ps.git</connection>
@@ -120,8 +120,15 @@
 					<requires>
 						<require>adore-t2</require>
 						<require>python-lxml</require>
+						<require>sar-helpers</require>
+						<require>StaMPS-t2-mcr</require>
+						<require>matlab717</require>
 					</requires>
 					<needarch>true</needarch>
+					<postinstallScriptlet>
+						<scriptFile>${project.basedir}/src/install/post_install.sh</scriptFile>
+						<fileEncoding>utf-8</fileEncoding>
+					</postinstallScriptlet>
 				</configuration>
 			</plugin>
 
@@ -159,7 +166,7 @@
 						<configuration>
 							<releaseName>v${project.version}</releaseName>
 							<tag>v${project.version}</tag>
-							<artifact>${project.build.directory}/rpm/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}-ciop.noarch.rpm</artifact>
+							<artifact>${project.build.directory}/rpm/${project.artifactId}/RPMS/noarch/${project.artifactId}-${project.version}.x86_64.rpm</artifact>
 							<overwriteArtifact>true</overwriteArtifact>
 						</configuration>
 					</execution>
