@@ -19,6 +19,7 @@ ERR_MASTER_SENSING_DATE=9
 ERR_MISSION_MASTER=11 
 ERR_AUX=13
 ERR_SLC=15 
+ERR_READ=14
 ERR_MASTER_SETUP=16
 ERR_SLC_AUX_TAR=17
 ERR_SLC_AUX_PUBLISH=19
@@ -43,6 +44,7 @@ function cleanExit() {
     ${ERR_SLC_AUX_PUBLISH}) msg="Failed to publish archive with master ROI_PAC aux files";;
     ${ERR_SLC_TAR}) msg="Failed to create archive with master slc";;
     ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with master slc";;
+    ${ERR_READ}) msg="Error reading the whole TSX";;
   esac
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
@@ -53,7 +55,7 @@ function cleanExit() {
 trap cleanExit EXIT
 
 main() {
-
+set -x
   local res
   FIRST="TRUE"
   
@@ -72,11 +74,11 @@ main() {
       ciop-log "INFO" "creating the directory structure in $TMPDIR"
   
       # which orbits
-      orbits="$( get_orbit_flag )"
-      [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+      #orbits="$( get_orbit_flag )"
+      #[ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
   
-      #  premaster_ref="$( ciop-getparam master )"
-      #  [ $? -ne 0 ] && return ${ERR_MASTER_REF}
+#      premaster_ref="$( ciop-getparam master )"
+ #     [ $? -ne 0 ] && return ${ERR_MASTER_REF}
 
       ciop-log "INFO" "Retrieving preliminary master"
       premaster=$( get_data ${scene_ref} ${RAW} ) #for final version
@@ -98,15 +100,17 @@ main() {
       premaster_folder=${SLC}/${sensing_date}
       mkdir -p ${premaster_folder}
   
-      get_aux "${mission}" "${sensing_date}" "${orbits}"
+      get_aux "${mission}" "${sensing_date}" ""
       [ $? -ne 0 ] && return ${ERR_AUX}
   
       cd ${premaster_folder}
-      slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
-      ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
+      #slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+      #TODO manage the choice of data (IF terrasarX)
+      read_bin="step_read_whole_TSX"
+      ciop-log "INFO" "Run ${read_bin} for ${sensing_date}"
       ln -s ${premaster}   
-      ${slc_bin}
-      [ $? -ne 0 ] && return ${ERR_SLC}
+      ${read_bin}
+      [ $? -ne 0 ] && return ${ERR_READ}
  
       MAS_WIDTH=`grep WIDTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
       MAS_LENGTH=`grep FILE_LENGTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
@@ -116,9 +120,11 @@ main() {
       echo "last_l $MAS_LENGTH" >> master_crop.in
       echo "first_p 1" >> master_crop.in
       echo "last_p $MAS_WIDTH" >> master_crop.in
-      step_master_setup
-      [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
- 
+     # step_master_setup
+      #[ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
+      step_master_read
+      [ $? -ne 0 ] && return ${ERR_MASTER_SETUP}
+
       cd ${PROCESS}
       tar cvfz premaster_${sensing_date}.tgz INSAR_${sensing_date} 
       [ $? -ne 0 ] && return ${ERR_SLC_TAR}
