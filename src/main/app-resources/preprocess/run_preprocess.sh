@@ -108,14 +108,13 @@ main() {
     ciop-log "INFO" "Processing scene: ${scene}"
 
     # which orbits (defined in application.xml)
-    orbits="$( get_orbit_flag )"
-    [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
-    ciop-log "INFO" "Orbit format used: ${orbits}" 
+    #orbits="$( get_orbit_flag )"
+    #[ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+    #ciop-log "INFO" "Orbit format used: ${orbits}" 
 
     ciop-log "INFO" "Get sensing date"
-    sensing_date=$( get_sensing_date ${scene} )
-    [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
-    ciop-log "INFO" "Sensing date: ${sensing_date}"        
+    #sensing_date=$( get_sensing_date ${scene} )
+    #[ $? -ne 0 ] && return ${ERR_SENSING_DATE}
 
     ciop-log "INFO" "Get Sensor"
     mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
@@ -124,18 +123,35 @@ main() {
     ciop-log "INFO" "Sensor: ${mission}"   
 
     ciop-log "INFO" "Get Auxilary data"
-    get_aux ${mission} ${sensing_date} ${orbits}
+    #get_aux ${mission} ${sensing_date} ${orbits}
     [ $? -ne 0 ] && return ${ERR_AUX}
 
     # link_raw
-    ciop-log "INFO" "Set-up Stamps Structure (i.e. run step link_raw)"
-    link_raw ${RAW} ${PROCESS}
-    [ $? -ne 0 ] && return ${ERR_LINK_RAW}
+    #ciop-log "INFO" "Set-up Stamps Structure (i.e. run step link_raw)"
+    #link_raw ${RAW} ${PROCESS}
+    #[ $? -ne 0 ] && return ${ERR_LINK_RAW}
+    cd ${RAW}
+    tar xvzf ${scene}
+    #rm -rf ${scene}
 
-    # focalize SLC
+    for f in $(find ./ -name "T*.xml"); do
+        echo info: $f
+        bname=$( basename ${f} )
+        sensing_date=$(echo $bname | awk -F '_' {'print substr($13,1,8)'} )
+    done
+    ciop-log "INFO" "Sensing date: ${sensing_date}"
+
+    ciop-log "INFO" "Running link_slcs"
+    cd ${PROCESS}
+    link_slcs ${RAW}
+
+    ciop-log "INFO" "Preparing step_read_geo"   
     scene_folder=${SLC}/${sensing_date}
     cd ${scene_folder}
-    slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+    cp -f $DORIS_SCR/readfiles_TSX.dorisin ../readfiles.dorisin
+    cp -f $DORIS_SCR/cropfiles_TSX.dorisin ../cropfiles.dorisin    
+    #slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+    slc_bin="step_read_geo"
     ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
     ${slc_bin}
     [ $? -ne 0 ] && return ${ERR_SLC}
@@ -175,10 +191,10 @@ main() {
       cd ${sensing_date}
 
       # step_orbit (extract orbits)
-      ln -s ${SLC}/${sensing_date} SLC
-      ciop-log "INFO" "step_orbit for ${sensing_date} "
-      step_orbit
-      [ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
+    #  ln -s ${SLC}/${sensing_date} SLC
+    #  ciop-log "INFO" "step_orbit for ${sensing_date} "
+    #  step_orbit
+    #  [ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
   
       ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
       step_coarse
