@@ -29,7 +29,6 @@ check_input_type () {
 }
 
 get_data() {
-  set -x
   local ref=$1
   local target=$2
   local local_file
