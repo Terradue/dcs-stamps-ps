@@ -19,6 +19,7 @@ ERR_MASTER_SENSING_DATE=9
 ERR_MISSION_MASTER=11 
 ERR_AUX=13
 ERR_SLC=15 
+ERR_READ=14
 ERR_MASTER_SETUP=16
 ERR_SLC_AUX_TAR=17
 ERR_SLC_AUX_PUBLISH=19
@@ -43,6 +44,7 @@ function cleanExit() {
     ${ERR_SLC_AUX_PUBLISH}) msg="Failed to publish archive with master ROI_PAC aux files";;
     ${ERR_SLC_TAR}) msg="Failed to create archive with master slc";;
     ${ERR_SLC_PUBLISH}) msg="Failed to publish archive with master slc";;
+    ${ERR_READ}) msg="Error reading the whole TSX";;
   esac
    
   [ "${retval}" != "0" ] && ciop-log "ERROR" \
@@ -53,7 +55,7 @@ function cleanExit() {
 trap cleanExit EXIT
 
 main() {
-
+set -x
   local res
   FIRST="TRUE"
   
@@ -62,7 +64,7 @@ main() {
  
     [ ${FIRST} == "TRUE" ] && {
       # creates the adore directory structure
-      export TMPDIR=$( set_env )
+      export TMPDIR=$( set_env $_WF_ID )
       export RAW=${TMPDIR}/RAW
       export PROCESS=${TMPDIR}/PROCESS
       export SLC=${PROCESS}/SLC
@@ -70,55 +72,89 @@ main() {
       export INS_DIR=${TMPDIR}/INS
 
       ciop-log "INFO" "creating the directory structure in $TMPDIR"
-  
-      # which orbits
-      orbits="$( get_orbit_flag )"
-      [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
-  
-      #  premaster_ref="$( ciop-getparam master )"
-      #  [ $? -ne 0 ] && return ${ERR_MASTER_REF}
 
       ciop-log "INFO" "Retrieving preliminary master"
       premaster=$( get_data ${scene_ref} ${RAW} ) #for final version
       [ $? -ne 0 ] && return ${ERR_MASTER_EMPTY}
-  
-      ciop-log "INFO" "Get sensing date"
-      sensing_date=$( get_sensing_date ${premaster} )
-      [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
-  
+
       mission=$( get_mission ${premaster} | tr "A-Z" "a-z" )
       [ $? -ne 0 ] && return ${ERR_MISSION_MASTER}
-      [ ${mission} == "asar" ] && flag="envi"
-  
+
       # TODO manage ERS and ALOS
       # [ ${mission} == "alos" ] && flag="alos"
       # [ ${mission} == "ers" ] && flag="ers"
       # [ ${mission} == "ers_envi" ] && flag="ers_envi"
+
+      [ ${mission} == "asar" ] && flag="envi"
+      [ ${mission} == "tsx" ] && flag="tsx"
+
+      if [[ "$flag" != "tsx" ]];then
+ 
+        # which orbits
+        orbits="$( get_orbit_flag )"
+        [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+
+        ciop-log "INFO" "Get sensing date"
+        sensing_date=$( get_sensing_date ${premaster} )
+        [ $? -ne 0 ] && return ${ERR_MASTER_SENSING_DATE}
+		
+        premaster_folder=${SLC}/${sensing_date}
+        mkdir -p ${premaster_folder}
+
+        get_aux "${mission}" "${sensing_date}" ""
+        [ $? -ne 0 ] && return ${ERR_AUX}
+ 
+      else	
+	
+        cd ${RAW}
+        tar xvzf ${premaster}
+  #      rm -f ${premaster}
+        for f in $(find ./ -name "T*.xml"); do
+          echo info: $f
+    	  bname=$( basename ${f} )
+          sensing_date=$(echo $bname | awk -F '_' {'print substr($13,1,8)'} )
+        done
+        cd ${PROCESS}
+        link_slcs ${RAW}
+
+      fi
   
       premaster_folder=${SLC}/${sensing_date}
-      mkdir -p ${premaster_folder}
-  
-      get_aux "${mission}" "${sensing_date}" "${orbits}"
-      [ $? -ne 0 ] && return ${ERR_AUX}
-  
       cd ${premaster_folder}
-      slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
-      ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
+      #slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+      #TODO manage the choice of data (IF terrasarX)
+      read_bin="step_read_whole_TSX"
+      ciop-log "INFO" "Run ${read_bin} for ${sensing_date}"
       ln -s ${premaster}   
-      ${slc_bin}
-      [ $? -ne 0 ] && return ${ERR_SLC}
- 
-      MAS_WIDTH=`grep WIDTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
-      MAS_LENGTH=`grep FILE_LENGTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
+      ${read_bin}
+      [ $? -ne 0 ] && return ${ERR_READ}
+      echo `ls -l ../` 
+      #MAS_WIDTH=`grep WIDTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
+      #MAS_LENGTH=`grep FILE_LENGTH  ${sensing_date}.slc.rsc | awk '{print $2}' `
 
-      ciop-log "INFO" "Will run step_master_setup"
-      echo "first_l 1" > master_crop.in
-      echo "last_l $MAS_LENGTH" >> master_crop.in
-      echo "first_p 1" >> master_crop.in
-      echo "last_p $MAS_WIDTH" >> master_crop.in
-      step_master_setup
-      [ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
- 
+      MAS_WIDTH=`grep WIDTH  image.slc.rsc | awk '{print $2}' `
+      MAS_LENGTH=`grep FILE_LENGTH  image.slc.rsc | awk '{print $2}' `
+
+      ciop-log "INFO" "Will run step_master_read_geo"
+      #echo "first_l 1" > master_crop.in
+      #echo "last_l $MAS_LENGTH" >> master_crop.in
+      #echo "first_p 1" >> master_crop.in
+      #echo "last_p $MAS_WIDTH" >> master_crop.in
+     # step_master_setup
+      #[ $? -ne 0 ] && return ${ERR_MASTER_SETUP} 
+#      step_master_read
+ #     [ $? -ne 0 ] && return ${ERR_MASTER_SETUP}
+      echo "lon 25.41" > master_crop_geo.in
+      echo "lat 36.40" >> master_crop_geo.in
+      echo "n_lines 9500" >> master_crop_geo.in
+      echo "n_pixels 8850" >> master_crop_geo.in
+      cp master_crop_geo.in /tmp/
+      cp master_crop_geo.in ../
+      step_master_read_geo
+      echo `ls -l ../cropfiles.dorisin`
+      
+      cp ../cropfiles.dorisin ${PROCESS}/INSAR_${sensing_date}
+      cp ../readfiles.dorisin ${PROCESS}/INSAR_${sensing_date}
       cd ${PROCESS}
       tar cvfz premaster_${sensing_date}.tgz INSAR_${sensing_date} 
       [ $? -ne 0 ] && return ${ERR_SLC_TAR}

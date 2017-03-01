@@ -6,7 +6,7 @@ set_env() {
 #  . ${SAR_HELPERS_HOME}/sar-helpers.sh
 
   # shorter temp path
-  export TMPDIR=/tmp/$( uuidgen )
+  export TMPDIR=/tmp/$1-$( uuidgen )
 
   echo $TMPDIR
 
@@ -21,6 +21,11 @@ set_env() {
   mkdir -p ${SLC}
   mkdir -p ${TMPDIR}/DEM
   return 0
+}
+
+check_input_type () { 
+  set -x
+  
 }
 
 get_data() {

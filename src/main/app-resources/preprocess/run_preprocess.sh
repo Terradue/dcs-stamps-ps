@@ -75,8 +75,7 @@ main() {
 
   first=TRUE
   premaster_date=""
-
-  export TMPDIR=$( set_env )
+  export TMPDIR=$( set_env $_WF_ID )
   export RAW=${TMPDIR}/RAW
   export PROCESS=${TMPDIR}/PROCESS
   export SLC=${PROCESS}/SLC
@@ -108,14 +107,13 @@ main() {
     ciop-log "INFO" "Processing scene: ${scene}"
 
     # which orbits (defined in application.xml)
-    orbits="$( get_orbit_flag )"
-    [ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
-    ciop-log "INFO" "Orbit format used: ${orbits}" 
+    #orbits="$( get_orbit_flag )"
+    #[ $? -ne 0 ] && return ${ERR_ORBIT_FLAG}
+    #ciop-log "INFO" "Orbit format used: ${orbits}" 
 
     ciop-log "INFO" "Get sensing date"
-    sensing_date=$( get_sensing_date ${scene} )
-    [ $? -ne 0 ] && return ${ERR_SENSING_DATE}
-    ciop-log "INFO" "Sensing date: ${sensing_date}"        
+    #sensing_date=$( get_sensing_date ${scene} )
+    #[ $? -ne 0 ] && return ${ERR_SENSING_DATE}
 
     ciop-log "INFO" "Get Sensor"
     mission=$( get_mission ${scene} | tr "A-Z" "a-z" )
@@ -124,18 +122,47 @@ main() {
     ciop-log "INFO" "Sensor: ${mission}"   
 
     ciop-log "INFO" "Get Auxilary data"
-    get_aux ${mission} ${sensing_date} ${orbits}
+    #get_aux ${mission} ${sensing_date} ${orbits}
     [ $? -ne 0 ] && return ${ERR_AUX}
 
     # link_raw
-    ciop-log "INFO" "Set-up Stamps Structure (i.e. run step link_raw)"
-    link_raw ${RAW} ${PROCESS}
-    [ $? -ne 0 ] && return ${ERR_LINK_RAW}
+    #ciop-log "INFO" "Set-up Stamps Structure (i.e. run step link_raw)"
+    #link_raw ${RAW} ${PROCESS}
+    #[ $? -ne 0 ] && return ${ERR_LINK_RAW}
+    cd ${RAW}
+    tar xvzf ${scene}
+    #rm -rf ${scene}
+    for f in $(find ./ -name "T*.xml"); do
+        echo info: $f
+        bname=$( basename ${f} )
+        sensing_date=$(echo $bname | awk -F '_' {'print substr($13,1,8)'} )
+    done
+    ciop-log "INFO" "Sensing date: ${sensing_date}"
 
-    # focalize SLC
+    ciop-log "INFO" "Running link_slcs"
+    cd ${PROCESS}
+    link_slcs ${RAW}
+
+    ciop-log "INFO" "Preparing step_read_geo"   
     scene_folder=${SLC}/${sensing_date}
+    premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
+    [ ! -d "${PROCESS}/INSAR_${premaster_date}" ] && ciop-log "DEBUG" "${PROCESS}/INSAR_${premaster_date} does not exist" || ciop-log "DEBUG" "${PROCESS}/INSAR_${premaster_date} exists"
+    if [ ! -d "${PROCESS}/INSAR_${premaster_date}" ]
+    then
+      ciop-copy -O ${PROCESS} ${premaster_slc_ref}
+      [ $? -ne 0 ] && return ${ERR_MASTER}
+      fix_res_path "${PROCESS}"
+
+      premaster_date=`basename ${PROCESS}/I* | cut -c 7-14`
+      [ $? -ne 0 ] && return ${ERR_SENSING_DATE_MASTER}
+      ciop-log "INFO" "Pre-Master Date: ${premaster_date}"
+    fi
+    set -x
     cd ${scene_folder}
-    slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+    cp ${PROCESS}/INSAR_${premaster_date}/cropfiles.dorisin ../ 
+    cp ${PROCESS}/INSAR_${premaster_date}/readfiles.dorisin ../
+    #slc_bin="step_slc_${flag}$( [ ${orbits} == "VOR" ] && [ ${mission} == "asar" ] && echo "_vor" )"
+    slc_bin="step_read_geo"
     ciop-log "INFO" "Run ${slc_bin} for ${sensing_date}"
     ${slc_bin}
     [ $? -ne 0 ] && return ${ERR_SLC}
@@ -166,7 +193,7 @@ main() {
       ciop-log "INFO" "Pre-Master Date: ${premaster_date}"
     fi
 
-    ciop-log "INFO" "Sensing date before if: $sensing_date"
+    ciop-log "INFO" "Sensing date before if: $sensing_date vs ${premaster_date}"
   
     if [ "${sensing_date}" != "${premaster_date}" ]
     then
@@ -175,11 +202,10 @@ main() {
       cd ${sensing_date}
 
       # step_orbit (extract orbits)
-      ln -s ${SLC}/${sensing_date} SLC
-      ciop-log "INFO" "step_orbit for ${sensing_date} "
-      step_orbit
-      [ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
-  
+    #  ln -s ${SLC}/${sensing_date} SLC
+    #  ciop-log "INFO" "step_orbit for ${sensing_date} "
+    #  step_orbit
+    #  [ $? -ne 0 ] && return ${ERR_STEP_ORBIT}
       ciop-log "INFO" "doing image coarse correlation for ${sensing_date}"
       step_coarse
       [ $? -ne 0 ] && return ${ERR_STEP_COARSE}
